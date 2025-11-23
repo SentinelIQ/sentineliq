@@ -1,0 +1,29 @@
+{
+  "version": "independent",
+  "npmClient": "npm",
+  "useWorkspaces": true,
+  "command": {
+    "version": {
+      "conventionalCommits": true,
+      "changelog": true,
+      "allowBranch": [
+        "main",
+        "develop",
+        "release/*"
+      ],
+      "push": true,
+      "createRelease": "github",
+      "message": "chore(release): %s"
+    },
+    "publish": {
+      "conventionalCommits": true,
+      "createRelease": "github",
+      "message": "chore(release): publish %s"
+    }
+  },
+  "packages": [
+    "app",
+    "blog",
+    "e2e-tests"
+  ]
+}

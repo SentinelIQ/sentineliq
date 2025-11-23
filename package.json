@@ -24,7 +24,12 @@
     "db:migrate": "npm run db:migrate -w app",
     "db:push": "npm run db:push -w app",
     "db:seed": "npm run db:seed -w app",
-    "db:studio": "npm run db:studio -w app"
+    "db:studio": "npm run db:studio -w app",
+    "lerna:version": "lerna version --conventional-commits --no-private",
+    "lerna:publish": "lerna publish from-package --no-private",
+    "lerna:changed": "lerna changed",
+    "lerna:list": "lerna list --all",
+    "lerna:repair": "lerna repair"
   },
   "keywords": [
     "security",
@@ -38,5 +43,11 @@
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=9.0.0"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^20.1.0",
+    "@commitlint/config-conventional": "^20.0.0",
+    "conventional-changelog-cli": "^5.0.0",
+    "lerna": "^9.0.1"
   }
 }
