@@ -1,0 +1,65 @@
+{
+  "title": "Admin Dashboard",
+  "users": {
+    "title": "User Management",
+    "totalUsers": "Total Users",
+    "activeUsers": "Active Users",
+    "newUsers": "New Users",
+    "table": {
+      "email": "Email",
+      "name": "Name",
+      "role": "Role",
+      "status": "Status",
+      "created": "Created",
+      "actions": "Actions"
+    },
+    "actions": {
+      "makeAdmin": "Make Admin",
+      "removeAdmin": "Remove Admin",
+      "suspend": "Suspend",
+      "activate": "Activate",
+      "delete": "Delete"
+    }
+  },
+  "stats": {
+    "title": "System Statistics",
+    "overview": "Overview",
+    "signups": "Sign-ups",
+    "revenue": "Revenue",
+    "activeSubscriptions": "Active Subscriptions",
+    "mrr": "Monthly Recurring Revenue"
+  },
+  "logs": {
+    "title": "System Logs",
+    "level": "Level",
+    "message": "Message",
+    "timestamp": "Timestamp",
+    "source": "Source",
+    "filter": {
+      "all": "All",
+      "error": "Errors",
+      "warning": "Warnings",
+      "info": "Info"
+    }
+  },
+  "workspaces": {
+    "title": "Workspace Management",
+    "totalWorkspaces": "Total Workspaces",
+    "table": {
+      "name": "Name",
+      "owner": "Owner",
+      "members": "Members",
+      "plan": "Plan",
+      "created": "Created",
+      "actions": "Actions"
+    }
+  },
+  "settings": {
+    "title": "System Settings",
+    "general": "General",
+    "security": "Security",
+    "email": "Email",
+    "storage": "Storage",
+    "integrations": "Integrations"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "name": "sentineliq-monorepo",
+  "version": "1.0.0",
+  "description": "SentinelIQ - Security Intelligence Platform (Monorepo)",
+  "private": true,
+  "workspaces": [
+    "app",
+    "blog",
+    "e2e-tests"
+  ],
+  "scripts": {
+    "install:all": "npm install --workspaces",
+    "dev:app": "npm run dev -w app",
+    "dev:blog": "npm run dev -w blog",
+    "dev": "npm run dev:app",
+    "build:all": "npm run build --workspaces",
+    "build:app": "npm run build -w app",
+    "build:blog": "npm run build -w blog",
+    "test": "npm run test --workspaces",
+    "test:app": "npm run test -w app",
+    "test:e2e": "npm run e2e -w e2e-tests",
+    "lint": "npm run lint --workspaces",
+    "lint:fix": "npm run lint:fix --workspaces",
+    "db:migrate": "npm run db:migrate -w app",
+    "db:push": "npm run db:push -w app",
+    "db:seed": "npm run db:seed -w app",
+    "db:studio": "npm run db:studio -w app"
+  },
+  "keywords": [
+    "security",
+    "intelligence",
+    "monitoring",
+    "threat-detection",
+    "platform"
+  ],
+  "author": "SentinelIQ Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

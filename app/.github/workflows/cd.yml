@@ -1,0 +1,202 @@
+name: CD - Continuous Deployment
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  NODE_VERSION: '20.x'
+  WASP_VERSION: '0.18.0'
+  FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+jobs:
+  deploy-staging:
+    name: 🚀 Deploy to Staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: |
+      github.ref == 'refs/heads/main' || 
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging')
+    environment:
+      name: staging
+      url: https://staging.sentineliq.app
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📥 Install dependencies
+        run: npm ci
+
+      - name: 🐝 Install Wasp CLI
+        run: curl -sSL https://get.wasp-lang.dev/installer.sh | sh -s -- -v ${{ env.WASP_VERSION }}
+
+      - name: 🔍 Add Wasp to PATH
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: 🏗️ Build for staging
+        env:
+          NODE_ENV: production
+          REACT_APP_API_URL: ${{ secrets.STAGING_API_URL }}
+        run: wasp build
+
+      - name: 🚁 Setup Flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: 🚀 Deploy to Fly.io Staging
+        run: |
+          cd .wasp/build
+          flyctl deploy --app sentineliq-staging --config fly.staging.toml
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: 🗄️ Run database migrations
+        run: flyctl ssh console --app sentineliq-staging -C "npm run db:migrate"
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: 🧪 Run smoke tests
+        run: |
+          curl -f https://staging.sentineliq.app/health || exit 1
+          curl -f https://staging.sentineliq.app/api/health || exit 1
+          echo "✅ Staging deployment successful!"
+
+      - name: 🔌 Test WebSocket endpoint (staging)
+        run: |
+          npm install -g wscat || true
+          timeout 3 wscat -c wss://staging.sentineliq.app/ws/notifications || true
+        continue-on-error: true
+
+      - name: 💬 Notify deployment
+        if: always()
+        run: |
+          echo "Staging deployment completed with status: ${{ job.status }}"
+
+  deploy-production:
+    name: 🚀 Deploy to Production
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    if: |
+      startsWith(github.ref, 'refs/tags/v') || 
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+    environment:
+      name: production
+      url: https://sentineliq.app
+    needs: []
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📥 Install dependencies
+        run: npm ci
+
+      - name: 🐝 Install Wasp CLI
+        run: curl -sSL https://get.wasp-lang.dev/installer.sh | sh -s -- -v ${{ env.WASP_VERSION }}
+
+      - name: 🔍 Add Wasp to PATH
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: 🏗️ Build for production
+        env:
+          NODE_ENV: production
+          REACT_APP_API_URL: ${{ secrets.PRODUCTION_API_URL }}
+        run: wasp build
+
+      - name: 🚁 Setup Flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: 🚀 Deploy to Fly.io Production
+        run: |
+          cd .wasp/build
+          flyctl deploy --app sentineliq-prod --config fly.production.toml --strategy rolling
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: 🗄️ Run database migrations
+        run: flyctl ssh console --app sentineliq-prod -C "npm run db:migrate"
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: 🧪 Run smoke tests
+        run: |
+          curl -f https://sentineliq.app/health || exit 1
+          curl -f https://sentineliq.app/api/health || exit 1
+          echo "✅ Production deployment successful!"
+
+      - name: 🔌 Test WebSocket endpoint (production)
+        run: |
+          npm install -g wscat || true
+          timeout 3 wscat -c wss://sentineliq.app/ws/notifications || true
+        continue-on-error: true
+
+      - name: 📊 Create deployment record
+        run: |
+          echo "Deployed version: ${{ github.ref_name }}"
+          echo "Commit SHA: ${{ github.sha }}"
+          echo "Deployed at: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+
+      - name: 🏷️ Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          body_path: CHANGELOG.md
+          draft: false
+          prerelease: false
+
+      - name: 💬 Notify deployment
+        if: always()
+        run: |
+          echo "Production deployment completed with status: ${{ job.status }}"
+
+  rollback:
+    name: ⏪ Rollback Deployment
+    runs-on: ubuntu-latest
+    if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [deploy-production]
+
+    steps:
+      - name: 🚁 Setup Flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: ⏪ Rollback to previous version
+        run: |
+          flyctl releases rollback --app sentineliq-prod
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: 🚨 Notify rollback
+        run: |
+          echo "🚨 ROLLBACK EXECUTED - Production deployment failed"

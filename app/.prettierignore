@@ -1,0 +1,11 @@
+node_modules
+dist
+.wasp
+.env*
+*.log
+coverage
+build
+.DS_Store
+*.md
+CHANGELOG.md
+package-lock.json

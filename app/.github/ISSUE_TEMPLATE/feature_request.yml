@@ -1,0 +1,121 @@
+name: ✨ Feature Request
+description: Suggest a new feature or enhancement
+title: "[FEATURE] "
+labels: ["enhancement", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a new feature! Please fill out the information below.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 🎯 Problem Statement
+      description: Is your feature request related to a problem? Please describe.
+      placeholder: I'm always frustrated when...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 💡 Proposed Solution
+      description: Describe the solution you'd like
+      placeholder: A clear and concise description of what you want to happen
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 🔄 Alternatives Considered
+      description: Describe any alternative solutions or features you've considered
+      placeholder: What other approaches have you thought about?
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: 🎯 Target Module
+      description: Which module should this feature be added to?
+      options:
+        - Auth
+        - Workspace
+        - Notifications
+        - Payment/Billing
+        - Analytics
+        - Audit
+        - Logs
+        - Aegis
+        - Eclipse
+        - MITRE
+        - Task Manager
+        - Admin Dashboard
+        - New Module
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 📊 Priority
+      description: How important is this feature?
+      options:
+        - Critical (blocking business operations)
+        - High (significant value add)
+        - Medium (nice to have)
+        - Low (future enhancement)
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: implementation
+    attributes:
+      label: 🛠️ Implementation Considerations
+      description: Check all that apply
+      options:
+        - label: Requires database schema changes
+        - label: Requires new API endpoints
+        - label: Requires UI changes
+        - label: Requires new dependencies
+        - label: Affects existing functionality
+        - label: Requires documentation updates
+        - label: I'm willing to implement this feature
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: 🎨 Mockups/Examples
+      description: If applicable, add mockups, wireframes, or examples
+      placeholder: Drag and drop images or provide links
+
+  - type: textarea
+    id: technical
+    attributes:
+      label: ⚙️ Technical Details
+      description: Any technical considerations or requirements?
+      placeholder: |
+        - API endpoints needed
+        - Database tables/fields
+        - External integrations
+        - Performance considerations
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: ✅ Acceptance Criteria
+      description: What needs to be true for this feature to be considered complete?
+      placeholder: |
+        - [ ] User can do X
+        - [ ] System validates Y
+        - [ ] Performance meets Z threshold
+
+  - type: textarea
+    id: context
+    attributes:
+      label: 💡 Additional Context
+      description: Add any other context or information about the feature request
+      placeholder: Any additional information that might help us understand the request

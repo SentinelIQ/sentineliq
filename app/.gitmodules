@@ -1,0 +1,7 @@
+[submodule "services/engine"]
+	path = services/engine
+	url = git@github.com:killsearch/sentinel-engine.git
+	branch = main
+[submodule "feedback"]
+	path = feedback
+	url = git@github.com:SentinelIQ/sentineliq-feedback.git

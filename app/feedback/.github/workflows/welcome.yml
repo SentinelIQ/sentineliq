@@ -1,0 +1,23 @@
+name: Welcome
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  welcome:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/first-interaction@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-message: |
+            👋 **Thank you for opening your first issue in SentinelIQ!**
+            
+            Our team will review your submission shortly. In the meantime:
+            
+            - 📚 Review our [documentation](../docs/)
+            - 🗺️ Check our [product roadmap](../docs/ROADMAP.md)
+            - 💬 Join the discussion
+            
+            **Important**: This is a public repository for product feedback only. Please do not share sensitive information such as passwords, API tokens, or customer data.

@@ -1,0 +1,47 @@
+{
+  "title": "Audit Logs",
+  "subtitle": "Track all actions and changes in your workspace for compliance and security",
+  "export": "Export",
+  "filters": {
+    "title": "Filters",
+    "description": "Filter audit logs by action and resource",
+    "actionType": "Action Type",
+    "allActions": "All Actions",
+    "resource": "Resource",
+    "resourcePlaceholder": "e.g., workspace, member, payment...",
+    "clear": "Clear"
+  },
+  "actions": {
+    "WORKSPACE_CREATED": "Workspace Created",
+    "WORKSPACE_UPDATED": "Workspace Updated",
+    "WORKSPACE_DELETED": "Workspace Deleted",
+    "MEMBER_ADDED": "Member Added",
+    "MEMBER_REMOVED": "Member Removed",
+    "MEMBER_ROLE_CHANGED": "Role Changed",
+    "OWNERSHIP_TRANSFERRED": "Ownership Transferred",
+    "PAYMENT_SUCCEEDED": "Payment Succeeded",
+    "PAYMENT_FAILED": "Payment Failed",
+    "SUBSCRIPTION_CHANGED": "Subscription Changed",
+    "PROVIDER_CONFIGURED": "Provider Configured",
+    "SETTINGS_UPDATED": "Settings Updated"
+  },
+  "timeline": {
+    "title": "Activity Timeline",
+    "total": "{{count}} total",
+    "by": "by",
+    "unknown": "Unknown",
+    "viewDetails": "View details",
+    "ipAddress": "IP",
+    "noLogs": "No audit logs found",
+    "loading": "Loading audit logs...",
+    "error": "Error loading audit logs: {{message}}"
+  },
+  "pagination": {
+    "showing": "Showing {{start}} - {{end}} of {{total}}",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "messages": {
+    "exportSoon": "Export functionality coming soon!"
+  }
+}

@@ -1,0 +1,120 @@
+name: 🐛 Bug Report
+description: Report a bug or unexpected behavior
+title: "[BUG] "
+labels: ["bug", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out the information below.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 🐛 Bug Description
+      description: A clear and concise description of what the bug is
+      placeholder: Tell us what you see!
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 📋 Steps to Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. Scroll down to '...'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: ✅ Expected Behavior
+      description: What you expected to happen
+      placeholder: Tell us what should have happened
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: ❌ Actual Behavior
+      description: What actually happened
+      placeholder: Tell us what actually happened
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 📸 Screenshots
+      description: If applicable, add screenshots to help explain your problem
+      placeholder: Drag and drop images here
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: 🎯 Affected Module
+      description: Which module is affected?
+      options:
+        - Auth
+        - Workspace
+        - Notifications
+        - Payment/Billing
+        - Analytics
+        - Audit
+        - Logs
+        - Aegis
+        - Eclipse
+        - MITRE
+        - Task Manager
+        - Admin Dashboard
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: 🔥 Severity
+      description: How severe is this bug?
+      options:
+        - Critical (system down, data loss)
+        - High (major feature broken)
+        - Medium (feature partially broken)
+        - Low (minor issue, workaround exists)
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 🌍 Environment
+      description: Please complete the following information
+      value: |
+        - OS: [e.g. Ubuntu 22.04, Windows 11, macOS 14]
+        - Browser: [e.g. Chrome 120, Firefox 121]
+        - Node Version: [e.g. 20.10.0]
+        - Wasp Version: [e.g. 0.15.2]
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 📝 Error Logs
+      description: Please copy and paste any relevant log output
+      render: shell
+
+  - type: textarea
+    id: context
+    attributes:
+      label: 💡 Additional Context
+      description: Add any other context about the problem here
+      placeholder: Any additional information that might help us understand the issue

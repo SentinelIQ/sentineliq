@@ -1,0 +1,329 @@
+version: '3.8'
+
+# Production Docker Compose for SentinelIQ
+# Uses pre-built GHCR images + infrastructure stack
+
+services:
+  # ----------------------------
+  # PostgreSQL Database
+  # ----------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: sentineliq-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-sentineliq}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+      POSTGRES_DB: ${DB_NAME:-sentineliq}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${DB_USER:-sentineliq}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sentineliq-network
+
+  # ----------------------------
+  # Redis Cache
+  # ----------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: sentineliq-redis
+    restart: always
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:-changeme}"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-changeme}", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - sentineliq-network
+
+  # ----------------------------
+  # MinIO S3 Storage
+  # ----------------------------
+  minio:
+    image: minio/minio:latest
+    container_name: sentineliq-minio
+    restart: always
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-sentineliq}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-changeme123}
+    ports:
+      - "9000:9000"  # API
+      - "9001:9001"  # Console
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - sentineliq-network
+
+  # ----------------------------
+  # Elasticsearch (Logging)
+  # ----------------------------
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: sentineliq-elasticsearch
+    restart: always
+    environment:
+      - node.name=elasticsearch
+      - cluster.name=sentineliq-prod
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - sentineliq-network
+
+  # ----------------------------
+  # Logstash
+  # ----------------------------
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.11.0
+    container_name: sentineliq-logstash
+    restart: always
+    volumes:
+      - ./elk/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ./elk/logstash/pipeline:/usr/share/logstash/pipeline:ro
+    ports:
+      - "5000:5000/tcp"
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+      ENVIRONMENT: "production"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9600/_node/stats || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - sentineliq-network
+
+  # ----------------------------
+  # Kibana (Logging UI)
+  # ----------------------------
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: sentineliq-kibana
+    restart: always
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - SERVER_NAME=sentineliq-kibana
+      - SERVER_HOST=0.0.0.0
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - sentineliq-network
+
+  # ----------------------------
+  # Server (Node.js Backend)
+  # From: ghcr.io/killsearch/saas-server
+  # ----------------------------
+  server:
+    image: ghcr.io/killsearch/saas-server:${SERVER_TAG:-main}
+    container_name: sentineliq-server
+    restart: always
+    ports:
+      - "3001:3001"
+    environment:
+      # Database
+      DATABASE_URL: postgresql://${DB_USER:-sentineliq}:${DB_PASSWORD:-changeme}@postgres:5432/${DB_NAME:-sentineliq}
+      
+      # Redis
+      REDIS_URL: redis://:${REDIS_PASSWORD:-changeme}@redis:6379/${REDIS_DB:-0}
+      
+      # Auth & Session
+      JWT_SECRET: ${JWT_SECRET}
+      SESSION_TIMEOUT_MINUTES: ${SESSION_TIMEOUT_MINUTES:-30}
+      
+      # App URLs
+      APP_ORIGIN: ${APP_ORIGIN}
+      WASP_WEB_CLIENT_URL: ${WASP_WEB_CLIENT_URL}
+      WASP_SERVER_URL: ${WASP_SERVER_URL}
+      ADMIN_EMAILS: ${ADMIN_EMAILS}
+      
+      # Payment - Stripe
+      STRIPE_API_KEY: ${STRIPE_API_KEY}
+      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      STRIPE_CUSTOMER_PORTAL_URL: ${STRIPE_CUSTOMER_PORTAL_URL}
+      STRIPE_WORKSPACE_STARTUP_PLAN_ID: ${STRIPE_WORKSPACE_STARTUP_PLAN_ID}
+      STRIPE_WORKSPACE_ENTERPRISE_PLAN_ID: ${STRIPE_WORKSPACE_ENTERPRISE_PLAN_ID}
+      
+      # Email - SendGrid
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY}
+      SENDGRID_FROM_EMAIL: ${SENDGRID_FROM_EMAIL}
+      
+      # Social Auth - Google
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_ANALYTICS_CLIENT_EMAIL: ${GOOGLE_ANALYTICS_CLIENT_EMAIL}
+      GOOGLE_ANALYTICS_PRIVATE_KEY: ${GOOGLE_ANALYTICS_PRIVATE_KEY}
+      GOOGLE_ANALYTICS_PROPERTY_ID: ${GOOGLE_ANALYTICS_PROPERTY_ID}
+      
+      # Analytics - Plausible
+      PLAUSIBLE_API_KEY: ${PLAUSIBLE_API_KEY}
+      PLAUSIBLE_SITE_ID: ${PLAUSIBLE_SITE_ID}
+      PLAUSIBLE_BASE_URL: ${PLAUSIBLE_BASE_URL}
+      ANALYTICS_ENABLED: ${ANALYTICS_ENABLED}
+      
+      # S3/MinIO Storage
+      S3_ENDPOINT: ${S3_ENDPOINT}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+      S3_BUCKET_DEV: ${S3_BUCKET_DEV}
+      S3_BUCKET_PROD: ${S3_BUCKET_PROD}
+      S3_REGION: ${S3_REGION}
+      S3_PUBLIC_URL: ${S3_PUBLIC_URL}
+      
+      # Storage Limits
+      STORAGE_LIMIT_FREE_MB: ${STORAGE_LIMIT_FREE_MB}
+      STORAGE_LIMIT_STARTUP_MB: ${STORAGE_LIMIT_STARTUP_MB}
+      STORAGE_LIMIT_ENTERPRISE_MB: ${STORAGE_LIMIT_ENTERPRISE_MB}
+      MAX_FILE_SIZE_MB: ${MAX_FILE_SIZE_MB}
+      
+      # Error Tracking - Sentry
+      SENTRY_DSN_SERVER: ${SENTRY_DSN_SERVER}
+      
+      # Web Push Notifications - VAPID
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+      VAPID_SUBJECT: ${VAPID_SUBJECT}
+      
+      # Logging - ELK Stack
+      ELK_ENABLED: ${ELK_ENABLED}
+      LOGSTASH_HOST: logstash
+      LOGSTASH_PORT: 5000
+      ELASTICSEARCH_HOST: ${ELASTICSEARCH_HOST}
+      ELASTICSEARCH_PORT: ${ELASTICSEARCH_PORT}
+      KIBANA_URL: ${KIBANA_URL}
+      ELK_LOG_RETENTION_DAYS: ${ELK_LOG_RETENTION_DAYS}
+      LOG_LEVEL: ${LOG_LEVEL}
+      
+      # Sentinel Engine (Python Crawler)
+      SENTINEL_QUEUE_NAME: ${SENTINEL_QUEUE_NAME}
+      SENTINEL_POLL_INTERVAL: ${SENTINEL_POLL_INTERVAL}
+      SENTINEL_CRAWLER_TIMEOUT: ${SENTINEL_CRAWLER_TIMEOUT}
+      SENTINEL_MAX_CONCURRENT_CRAWLS: ${SENTINEL_MAX_CONCURRENT_CRAWLS}
+      SENTINEL_PLAYWRIGHT_HEADLESS: ${SENTINEL_PLAYWRIGHT_HEADLESS}
+      SENTINEL_SCREENSHOT_DIR: ${SENTINEL_SCREENSHOT_DIR}
+      SENTINEL_TESSERACT_LANG: ${SENTINEL_TESSERACT_LANG}
+      SENTINEL_MIN_CONFIDENCE: ${SENTINEL_MIN_CONFIDENCE}
+      SENTINEL_LOG_RETENTION_DAYS: ${SENTINEL_LOG_RETENTION_DAYS}
+      
+      # Status Page
+      STATUS_PAGE_URL: ${STATUS_PAGE_URL}
+      STATUS_PAGE_PORT: ${STATUS_PAGE_PORT}
+      STATUS_PAGE_ENABLED: ${STATUS_PAGE_ENABLED}
+      
+      # Environment
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 3001
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+      logstash:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - sentineliq-network
+
+  # ----------------------------
+  # Client (React Frontend)
+  # From: ghcr.io/killsearch/saas-client
+  # ----------------------------
+  client:
+    image: ghcr.io/killsearch/saas-client:${CLIENT_TAG:-main}
+    container_name: sentineliq-client
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      # Frontend URLs
+      REACT_APP_API_BASE_URL: ${REACT_APP_API_BASE_URL}
+      REACT_APP_WASP_SERVER_URL: ${REACT_APP_WASP_SERVER_URL}
+      
+      # Analytics
+      REACT_APP_PLAUSIBLE_ANALYTICS_ID: ${REACT_APP_PLAUSIBLE_ANALYTICS_ID}
+      REACT_APP_GOOGLE_ANALYTICS_ID: ${REACT_APP_GOOGLE_ANALYTICS_ID}
+      
+      # Error Tracking - Sentry
+      REACT_APP_SENTRY_DSN: ${REACT_APP_SENTRY_DSN}
+      REACT_APP_SENTRY_ENVIRONMENT: ${REACT_APP_SENTRY_ENVIRONMENT}
+      
+      # Social Auth
+      REACT_APP_GOOGLE_AUTH_URL: ${REACT_APP_GOOGLE_AUTH_URL}
+      
+      # Payment
+      REACT_APP_STRIPE_PUBLISHABLE_KEY: ${REACT_APP_STRIPE_PUBLISHABLE_KEY}
+      
+      # Environment
+      NODE_ENV: ${NODE_ENV:-production}
+    depends_on:
+      - server
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - sentineliq-network
+
+volumes:
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+  elasticsearch-data:
+    driver: local
+  minio-data:
+    driver: local
+
+networks:
+  sentineliq-network:
+    driver: bridge

@@ -1,0 +1,114 @@
+{
+  "name": "SentinelIQ Dev Container",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:20-bookworm",
+  
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "moby": true,
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/git:1": {}
+  },
+
+  "containerEnv": {
+    "WASP_TELEMETRY_CONTEXT": "devcontainer",
+    "NODE_ENV": "development"
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "wasp-lang.wasp",
+        "ms-vscode.cpptools",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "PKief.material-icon-theme",
+        "Prisma.prisma",
+        "ms-azuretools.vscode-docker",
+        "ms-vscode-remote.remote-containers"
+      ],
+      "settings": {
+        "workbench.iconTheme": "material-icon-theme",
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "[typescript]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[typescriptreact]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        }
+      }
+    }
+  },
+
+  "forwardPorts": [3000, 3001, 3004, 5432, 6379, 5601, 9000, 9001, 9200, 5000, 9600, 5050, 8001],
+  "portsAttributes": {
+    "3000": {
+      "label": "React-Vite Client",
+      "onAutoForward": "notify"
+    },
+    "3001": {
+      "label": "Node.js Server",
+      "onAutoForward": "notify"
+    },
+    "3004": {
+      "label": "Status Page (Uptime Kuma)",
+      "onAutoForward": "notify"
+    },
+    "5432": {
+      "label": "PostgreSQL",
+      "onAutoForward": "silent"
+    },
+    "6379": {
+      "label": "Redis",
+      "onAutoForward": "silent"
+    },
+    "5601": {
+      "label": "Kibana",
+      "onAutoForward": "notify"
+    },
+    "9000": {
+      "label": "MinIO API",
+      "onAutoForward": "notify"
+    },
+    "9001": {
+      "label": "MinIO Console",
+      "onAutoForward": "notify"
+    },
+    "9200": {
+      "label": "Elasticsearch",
+      "onAutoForward": "silent"
+    },
+    "5000": {
+      "label": "Logstash",
+      "onAutoForward": "silent"
+    },
+    "9600": {
+      "label": "Logstash Monitoring",
+      "onAutoForward": "silent"
+    },
+    "5050": {
+      "label": "PgAdmin",
+      "onAutoForward": "notify"
+    },
+    "8001": {
+      "label": "RedisInsight",
+      "onAutoForward": "notify"
+    }
+  },
+
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+
+  "remoteUser": "node",
+
+  "mounts": [
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+  ],
+
+  "otherPortsAttributes": {
+    "onAutoForward": "silent"
+  }
+}

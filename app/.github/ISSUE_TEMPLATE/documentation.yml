@@ -1,0 +1,62 @@
+name: 📚 Documentation Issue
+description: Report missing or unclear documentation
+title: "[DOCS] "
+labels: ["documentation", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve our documentation!
+
+  - type: dropdown
+    id: doc-type
+    attributes:
+      label: 📖 Documentation Type
+      description: What type of documentation needs attention?
+      options:
+        - API Documentation
+        - User Guide
+        - Developer Guide
+        - Deployment Guide
+        - Module Documentation
+        - Code Comments
+        - README
+        - CHANGELOG
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue
+    attributes:
+      label: ❓ What's Missing or Unclear?
+      description: Describe what documentation is missing or needs improvement
+      placeholder: The authentication flow is not clearly documented...
+    validations:
+      required: true
+
+  - type: textarea
+    id: location
+    attributes:
+      label: 📍 Location
+      description: Where should this documentation exist or be updated?
+      placeholder: |
+        - File path: docs/auth/README.md
+        - Section: Authentication Flow
+        - Lines: 45-60
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: 💡 Suggested Improvement
+      description: How would you improve this documentation?
+      placeholder: Add a sequence diagram showing the OAuth flow...
+
+  - type: checkboxes
+    id: help
+    attributes:
+      label: 🤝 Can you help?
+      options:
+        - label: I can create a pull request to fix this

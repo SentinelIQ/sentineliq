@@ -1,0 +1,81 @@
+# Fly.io Configuration for Production
+
+app = "sentineliq-prod"
+primary_region = "gru"  # São Paulo
+
+[build]
+  builder = "heroku/buildpacks:20"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "8080"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 2  # High availability
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    hard_limit = 500
+    soft_limit = 400
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 8080
+  processes = ["app"]
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  [services.concurrency]
+    type = "connections"
+    hard_limit = 50
+    soft_limit = 40
+
+  [[services.tcp_checks]]
+    interval = "15s"
+    timeout = "2s"
+    grace_period = "5s"
+    restart_limit = 0
+
+  [[services.http_checks]]
+    interval = 10000
+    grace_period = "5s"
+    method = "get"
+    path = "/health"
+    protocol = "http"
+    timeout = 2000
+    tls_skip_verify = false
+
+  [[services.http_checks]]
+    interval = 10000
+    grace_period = "5s"
+    method = "get"
+    path = "/api/health"
+    protocol = "http"
+    timeout = 2000
+    tls_skip_verify = false
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 2
+  memory_mb = 2048
+
+# Auto-scaling configuration
+[scaling]
+  min_machines = 2
+  max_machines = 10
+
+# Metrics for auto-scaling decisions
+[metrics]
+  port = 9091
+  path = "/metrics"

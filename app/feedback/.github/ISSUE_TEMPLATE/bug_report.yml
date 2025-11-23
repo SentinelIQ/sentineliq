@@ -1,0 +1,135 @@
+name: 🐛 Bug Report
+description: Report a bug or unexpected behavior
+title: "[BUG] "
+labels: ["bug", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🐛 Thank you for reporting a bug!
+        
+        Please provide detailed information to help our team investigate and resolve the issue.
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: 🎯 Affected Module
+      description: Which SentinelIQ module is experiencing the issue?
+      options:
+        - Aegis (Threat Intelligence)
+        - Eclipse (Dark Web Monitoring)
+        - MITRE ATT&CK Framework
+        - Analytics Dashboard
+        - Real-time Notifications
+        - Workspace Management
+        - Authentication & Security
+        - Payment & Billing
+        - Admin Dashboard
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: 🔥 Severity Level
+      description: What is the business impact of this bug?
+      options:
+        - 🔴 Critical - System unavailable or data loss
+        - 🟠 High - Core functionality broken
+        - 🟡 Medium - Secondary feature affected
+        - 🟢 Low - Cosmetic issue or minor inconvenience
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 📝 Bug Description
+      description: Provide a clear and concise description of the issue
+      placeholder: "When I click on..., the system..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 🔄 Steps to Reproduce
+      description: How can we reproduce this behavior?
+      placeholder: |
+        1. Navigate to '...'
+        2. Click on '...'
+        3. Scroll to '...'
+        4. Observe the error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: ✅ Expected Behavior
+      description: What should happen?
+      placeholder: "I expected that..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: ❌ Actual Behavior
+      description: What actually happened?
+      placeholder: "Instead, what occurred was..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 📸 Screenshots
+      description: If applicable, attach screenshots or screen recordings
+      placeholder: "Paste or drag images here"
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 🖥️ Environment Details
+      description: Information about your environment
+      value: |
+        - **Browser**: [e.g., Chrome 120, Firefox 119, Safari 17]
+        - **OS**: [e.g., Windows 11, macOS 14, Ubuntu 22.04]
+        - **SentinelIQ Version**: [e.g., 1.0.0]
+        - **Subscription Plan**: [Free, Hobby, Pro]
+        - **Workspace ID**: [If applicable]
+      render: markdown
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 📋 Error Logs
+      description: Paste any relevant error messages or logs
+      placeholder: "Paste logs here (please redact sensitive information like tokens or passwords)"
+      render: shell
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: ℹ️ Additional Context
+      description: Any other relevant information about the problem
+      placeholder: "Additional context, workarounds attempted, etc."
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: ✔️ Pre-submission Checklist
+      description: Please confirm before submitting
+      options:
+        - label: I have searched for duplicate issues
+          required: true
+        - label: I have removed all sensitive information (passwords, API tokens, personal data)
+          required: true
+        - label: I have read and agree to the Code of Conduct
+          required: true

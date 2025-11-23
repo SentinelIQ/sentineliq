@@ -1,0 +1,224 @@
+name: CI - Continuous Integration
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20.x'
+  WASP_VERSION: '0.18.0'
+
+jobs:
+  lint:
+    name: 🔍 Lint Code
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📥 Install dependencies
+        run: npm ci
+
+      - name: 🎨 Run Prettier check
+        run: npm run lint
+
+      - name: 📝 Check commit messages
+        if: github.event_name == 'pull_request'
+        run: |
+          npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
+
+  validate-wasp:
+    name: ✅ Validate Wasp Configuration
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 🐝 Install Wasp CLI
+        run: curl -sSL https://get.wasp-lang.dev/installer.sh | sh -s -- -v ${{ env.WASP_VERSION }}
+
+      - name: 🔍 Add Wasp to PATH
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: ✨ Validate Wasp project
+        run: wasp validate
+
+  test:
+    name: 🧪 Run Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [lint, validate-wasp]
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: sentineliq_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📥 Install dependencies
+        run: npm ci
+
+      - name: 🐝 Install Wasp CLI
+        run: curl -sSL https://get.wasp-lang.dev/installer.sh | sh -s -- -v ${{ env.WASP_VERSION }}
+
+      - name: 🔍 Add Wasp to PATH
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: 🗄️ Run database migrations
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/sentineliq_test
+        run: wasp db migrate-dev
+
+      - name: 🧪 Run unit tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/sentineliq_test
+          REDIS_URL: redis://localhost:6379
+          NODE_ENV: test
+        run: npm test -- --run
+
+      - name: 🎭 Run E2E tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/sentineliq_test
+          REDIS_URL: redis://localhost:6379
+          NODE_ENV: test
+          PLAYWRIGHT_BROWSERS_PATH: 0
+        run: npm run test:e2e -- --run
+        continue-on-error: true
+
+      - name: 📊 Upload coverage reports
+        if: always()
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage/coverage-final.json
+          flags: unittests
+          fail_ci_if_error: false
+
+  build:
+    name: 🏗️ Build Application
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [test]
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📥 Install dependencies
+        run: npm ci
+
+      - name: 🐝 Install Wasp CLI
+        run: curl -sSL https://get.wasp-lang.dev/installer.sh | sh -s -- -v ${{ env.WASP_VERSION }}
+
+      - name: 🔍 Add Wasp to PATH
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: 🏗️ Build Wasp application
+        env:
+          NODE_ENV: production
+        run: wasp build
+
+      - name: 📦 Archive build artifacts
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: wasp-build-${{ github.sha }}
+          path: .wasp/build
+          retention-days: 7
+
+  security:
+    name: 🔒 Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [lint]
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 🔍 Run npm audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+      - name: 🛡️ Run Snyk security scan
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+
+  notify:
+    name: 📢 Notify Results
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [lint, validate-wasp, test, build, security]
+
+    steps:
+      - name: 📊 Check workflow status
+        run: |
+          echo "Lint: ${{ needs.lint.result }}"
+          echo "Validate: ${{ needs.validate-wasp.result }}"
+          echo "Test: ${{ needs.test.result }}"
+          echo "Build: ${{ needs.build.result }}"
+          echo "Security: ${{ needs.security.result }}"

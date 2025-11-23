@@ -1,0 +1,35 @@
+{
+  "title": "Painel",
+  "welcome": "Bem-vindo de volta, {{name}}!",
+  "overview": {
+    "title": "Visão Geral",
+    "totalUsers": "Total de Usuários",
+    "activeWorkspaces": "Workspaces Ativos",
+    "revenue": "Receita",
+    "growth": "Crescimento"
+  },
+  "stats": {
+    "title": "Estatísticas",
+    "today": "Hoje",
+    "thisWeek": "Esta Semana",
+    "thisMonth": "Este Mês",
+    "viewDetails": "Ver Detalhes"
+  },
+  "recentActivity": {
+    "title": "Atividade Recente",
+    "noActivity": "Nenhuma atividade recente",
+    "viewAll": "Ver Tudo"
+  },
+  "quickActions": {
+    "title": "Ações Rápidas",
+    "createWorkspace": "Criar Workspace",
+    "inviteUsers": "Convidar Usuários",
+    "viewReports": "Ver Relatórios",
+    "manageSettings": "Gerenciar Configurações"
+  },
+  "notifications": {
+    "title": "Notificações",
+    "markAllRead": "Marcar todas como lidas",
+    "noNotifications": "Sem novas notificações"
+  }
+}

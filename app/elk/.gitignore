@@ -1,0 +1,15 @@
+# ELK Stack .gitignore
+
+# Elasticsearch data
+data/
+
+# Logstash logs
+*.log
+
+# Backup files
+*.bak
+*~
+
+# OS specific files
+.DS_Store
+Thumbs.db

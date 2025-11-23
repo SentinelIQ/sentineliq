@@ -1,0 +1,23 @@
+{
+  "title": "ECLIPSE",
+  "subtitle": "Monitor de Proteção de Marca e Propriedade Intelectual",
+  "description": "Rastreie e gerencie todas as violações de marca detectadas",
+  
+  "dashboard": {
+    "title": "Painel",
+    "subtitle": "Visão geral do status de proteção de marca e infrações",
+    "stats": {
+      "activeBrands": "Marcas Ativas",
+      "monitoring": "Monitoramento",
+      "totalInfringements": "Total de Infrações",
+      "allTime": "Tempo todo",
+      "critical": "Crítico",
+      "requireAction": "Requer ação",
+      "active": "Ativo",
+      "inProgress": "Em andamento",
+      "resolved": "Resolvido",
+      "thisMonth": "Este mês"
+    },
+    "recentActivity": "Atividade Recente"
+  }
+}

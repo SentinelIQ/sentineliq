@@ -1,0 +1,1888 @@
+app SentinelIQ {
+  wasp: {
+    version: "^0.18.0"
+  },
+
+  title: "SentinelIQ - Plataforma de Segurança Unificada",
+
+  head: [
+    "<link rel='icon' href='/favicon.ico' />",
+    "<meta charset='utf-8' />",
+    "<meta name='description' content='Plataforma SaaS unificada para gestão de incidentes, riscos, compliance e segurança cibernética.' />",
+    "<meta name='author' content='SentinelIQ' />",
+    "<meta name='keywords' content='segurança, incident management, GRC, compliance, cybersecurity, SIEM, SOC' />",
+    
+    "<meta property='og:type' content='website' />",
+    "<meta property='og:title' content='SentinelIQ - Plataforma de Segurança Unificada' />",
+    "<meta property='og:site_name' content='SentinelIQ' />",
+    "<meta property='og:url' content='https://sentineliq.com.br' />",
+    "<meta property='og:description' content='Plataforma SaaS unificada para gestão de incidentes, riscos, compliance e segurança cibernética.' />",
+    "<meta property='og:image' content='https://sentineliq.com.br/og-image.png' />",
+    "<meta name='twitter:image' content='https://sentineliq.com.br/og-image.png' />",
+    "<meta name='twitter:image:width' content='1200' />",
+    "<meta name='twitter:image:height' content='630' />",
+    "<meta name='twitter:card' content='summary_large_image' />",
+    
+    "<!-- Plausible Analytics -->",
+    "<script defer data-domain='sentineliq.com.br' data-api='https://plausible.io/api/event' src='https://plausible.io/js/script.revenue.outbound-links.js'></script>",
+  ],
+
+  // 🔐 Auth out of the box! https://wasp.sh/docs/auth/overview
+  auth: {
+    userEntity: User,
+    methods: {
+      // NOTE: If you decide to not use email auth, make sure to also delete the related routes and pages below.
+      //   (RequestPasswordReset(Route|Page), PasswordReset(Route|Page), EmailVerification(Route|Page))
+      email: {
+        fromField: {
+          name: "SentinelIQ",
+          email: "noreply@sentineliq.com.br"
+        },
+        emailVerification: {
+          clientRoute: EmailVerificationRoute,
+          getEmailContentFn: import { getVerificationEmailContent } from "@src/core/auth/emails",
+        },
+        passwordReset: {
+          clientRoute: PasswordResetRoute,
+          getEmailContentFn: import { getPasswordResetEmailContent } from "@src/core/auth/emails",
+        },
+        userSignupFields: import { getEmailUserFields } from "@src/core/auth/userSignupFields",
+      },
+      // Uncomment to enable Google Auth (check https://wasp.sh/docs/auth/social-auth/google for setup instructions):
+      google: { // Guide for setting up Auth via Google
+        userSignupFields: import { getGoogleUserFields } from "@src/core/auth/userSignupFields",
+        configFn: import { getGoogleAuthConfig } from "@src/core/auth/userSignupFields",
+      },
+      // Uncomment to enable GitHub Auth (check https://wasp.sh/docs/auth/social-auth/github for setup instructions):
+      // gitHub: {
+      //   userSignupFields: import { getGitHubUserFields } from "@src/auth/userSignupFields",
+      //   configFn: import { getGitHubAuthConfig } from "@src/auth/userSignupFields",
+      // },
+      // Uncomment to enable Discord Auth (check https://wasp.sh/docs/auth/social-auth/discord for setup instructions):
+      // discord: {
+      //   userSignupFields: import { getDiscordUserFields } from "@src/auth/userSignupFields",
+      //   configFn: import { getDiscordAuthConfig } from "@src/auth/userSignupFields"
+      // }
+    },
+    onAuthFailedRedirectTo: "/login",
+    onAuthSucceededRedirectTo: "/dashboard",
+  },
+
+  db: {
+    // Features and data are code-driven, no seeds needed
+  },
+
+  server: {
+    setupFn: import { serverSetup } from "@src/server/sentry",
+  },
+
+  client: {
+    rootComponent: import App from "@src/client/App",
+  },
+
+  emailSender: {
+    provider: SMTP,
+    defaultFrom: {
+      name: "SentinelIQ",
+      // Using environment variable to avoid hardcoded email
+      email: "noreply@sentineliq.com.br"
+    },
+  },
+}
+
+route LandingPageRoute { path: "/", to: LandingPage }
+page LandingPage {
+  component: import LandingPage from "@src/client/pages/landing/LandingPage"
+}
+
+route StatusPageRoute { path: "/status", to: StatusPage }
+page StatusPage {
+  component: import StatusPage from "@src/client/pages/StatusPage"
+}
+
+//#region Auth Pages
+route LoginRoute { path: "/login", to: LoginPage }
+page LoginPage {
+  component: import Login from "@src/client/pages/auth/LoginPage"
+}
+
+route SignupRoute { path: "/signup", to: SignupPage }
+page SignupPage {
+  component: import { Signup } from "@src/client/pages/auth/SignupPage"
+}
+
+route RequestPasswordResetRoute { path: "/request-password-reset", to: RequestPasswordResetPage }
+page RequestPasswordResetPage {
+  component: import { RequestPasswordResetPage } from "@src/client/pages/auth/RequestPasswordResetPage",
+}
+
+route PasswordResetRoute { path: "/password-reset", to: PasswordResetPage }
+page PasswordResetPage {
+  component: import { PasswordResetPage } from "@src/client/pages/auth/PasswordResetPage",
+}
+
+route EmailVerificationRoute { path: "/email-verification", to: EmailVerificationPage }
+page EmailVerificationPage {
+  component: import { EmailVerificationPage } from "@src/client/pages/auth/EmailVerificationPage",
+}
+//#endregion
+
+//#region User
+route AccountRoute { path: "/account", to: AccountPage }
+page AccountPage {
+  authRequired: true,
+  component: import Account from "@src/client/pages/user/AccountPage"
+}
+
+route TwoFactorAuthRoute { path: "/account/security/2fa", to: TwoFactorAuthPage }
+page TwoFactorAuthPage {
+  authRequired: true,
+  component: import TwoFactorAuth from "@src/client/pages/user/security/TwoFactorAuthPage"
+}
+
+route NotificationsRoute { path: "/notifications", to: NotificationsPage }
+page NotificationsPage {
+  authRequired: true,
+  component: import NotificationsPage from "@src/client/pages/notifications/NotificationsPage"
+}
+
+route NotificationPreferencesRoute { path: "/notifications/preferences", to: NotificationPreferencesPage }
+page NotificationPreferencesPage {
+  authRequired: true,
+  component: import NotificationPreferencesPage from "@src/client/pages/notifications/NotificationPreferencesPage"
+}
+
+query getPaginatedUsers {
+  fn: import { getPaginatedUsers } from "@src/core/user/operations",
+  entities: [User]
+}
+
+action updateIsUserAdminById {
+  fn: import { updateIsUserAdminById } from "@src/core/user/operations",
+  entities: [User, SystemLog]
+}
+
+action suspendUser {
+  fn: import { suspendUser } from "@src/core/user/operations",
+  entities: [User, SystemLog]
+}
+
+action resetUser2FA {
+  fn: import { resetUser2FA } from "@src/core/user/operations",
+  entities: [User, SystemLog]
+}
+
+action resetUserPassword {
+  fn: import { resetUserPassword } from "@src/core/user/operations",
+  entities: [User, RefreshToken, SystemLog]
+}
+
+
+query getUserActivity {
+  fn: import { getUserActivity } from "@src/core/user/operations",
+  entities: [AuditLog, Workspace]
+}
+
+action deleteUserCascade {
+  fn: import { deleteUserCascade } from "@src/core/user/operations",
+  entities: [User, SystemLog]
+}
+//#endregion
+
+
+
+//#region Payment
+route PricingPageRoute { path: "/pricing", to: PricingPage }
+page PricingPage {
+  component: import PricingPage from "@src/client/pages/payment/PricingPage"
+}
+
+route CheckoutRoute { path: "/checkout", to: CheckoutPage }
+page CheckoutPage {
+  authRequired: true,
+  component: import Checkout from "@src/client/pages/payment/CheckoutPage"
+}
+
+query getCustomerPortalUrl {
+  fn: import { getCustomerPortalUrl } from  "@src/core/payment/operations",
+  entities: [User]
+}
+
+action generateCheckoutSession {
+  fn: import { generateCheckoutSession } from "@src/core/payment/operations",
+  entities: [User]
+}
+
+query getStripeInvoices {
+  fn: import { getStripeInvoices } from "@src/core/payment/operations",
+  entities: [User, Workspace]
+}
+
+query getAllSubscriptions {
+  fn: import { getAllSubscriptions } from "@src/core/payment/operations",
+  entities: [Workspace, WorkspaceMember]
+}
+
+query getPaymentHistory {
+  fn: import { getPaymentHistory } from "@src/core/payment/operations",
+  entities: [Workspace]
+}
+
+action processRefund {
+  fn: import { processRefund } from "@src/core/payment/operations",
+  entities: [SystemLog]
+}
+
+action overrideSubscription {
+  fn: import { overrideSubscription } from "@src/core/payment/operations",
+  entities: [Workspace, SystemLog]
+}
+
+query getFailedPayments {
+  fn: import { getFailedPayments } from "@src/core/payment/operations",
+  entities: [Workspace]
+}
+
+api paymentsWebhook {
+  fn: import { paymentsWebhook } from "@src/core/payment/webhook",
+  entities: [User, Workspace],
+  middlewareConfigFn: import { paymentsMiddlewareConfigFn } from "@src/core/payment/webhook",
+  httpRoute: (POST, "/payments-webhook")
+}
+
+api healthCheck {
+  fn: import { healthCheck } from "@src/server/healthCheck",
+  httpRoute: (GET, "/api/health")
+}
+
+api emailPreview {
+  fn: import { previewEmailApi } from "@src/server/api/emailPreview",
+  middlewareConfigFn: import { emailPreviewMiddlewareConfig } from "@src/server/api/emailPreview",
+  httpRoute: (GET, "/api/email-preview"),
+  entities: [User]
+}
+
+api uploadFile {
+  fn: import { uploadFileApi } from "@src/server/api/upload",
+  middlewareConfigFn: import { uploadFileMiddlewareConfig } from "@src/server/api/upload",
+  httpRoute: (POST, "/api/upload"),
+  entities: [User, Workspace]
+}
+
+api screenshotFile {
+  fn: import { screenshotFileApi } from "@src/server/api/screenshot",
+  httpRoute: (GET, "/api/screenshot/:alertId"),
+  entities: [User, Workspace, WorkspaceMember]
+}
+
+//#endregion
+
+//#region Admin Dashboard
+route AdminRoute { path: "/admin", to: AnalyticsDashboardPage }
+page AnalyticsDashboardPage {
+  authRequired: true,
+  component: import AnalyticsDashboardPage from "@src/client/pages/admin/dashboards/analytics/AnalyticsDashboardPage"
+}
+
+route AdminAnalyticsConfigRoute { path: "/admin/analytics/config", to: AnalyticsConfigPage }
+page AnalyticsConfigPage {
+  authRequired: true,
+  component: import AnalyticsConfigPage from "@src/client/pages/admin/dashboards/analytics/AnalyticsConfigPage"
+}
+
+query getDailyStats {
+  fn: import { getDailyStats } from "@src/core/analytics/operations",
+  entities: [DailyStats, PageViewSource]
+}
+
+route AdminUsersRoute { path: "/admin/users", to: AdminUsersPage }
+page AdminUsersPage {
+  authRequired: true,
+  component: import AdminUsers from "@src/client/pages/admin/dashboards/users/UsersDashboardPage"
+}
+
+route AdminWorkspacesRoute { path: "/admin/workspaces", to: AdminWorkspacesPage }
+page AdminWorkspacesPage {
+  authRequired: true,
+  component: import WorkspaceManagement from "@src/client/pages/admin/dashboards/workspaces/WorkspaceManagementPage"
+}
+
+route AdminBillingRoute { path: "/admin/billing", to: AdminBillingPage }
+page AdminBillingPage {
+  authRequired: true,
+  component: import BillingAdmin from "@src/client/pages/admin/dashboards/billing/BillingAdminPage"
+}
+
+route AdminJobsRoute { path: "/admin/jobs", to: AdminJobsPage }
+page AdminJobsPage {
+  authRequired: true,
+  component: import AdminJobsPage from "@src/client/pages/admin/JobsDashboardTab"
+}
+
+route AdminSystemLogsRoute { path: "/admin/logs", to: AdminSystemLogsPage }
+page AdminSystemLogsPage {
+  authRequired: true,
+  component: import SystemLogsPage from "@src/client/pages/admin/dashboards/logs/SystemLogsPage"
+}
+
+route AdminDatabaseRoute { path: "/admin/database", to: AdminDatabasePage }
+page AdminDatabasePage {
+  authRequired: true,
+  component: import DatabaseManagementPage from "@src/client/pages/admin/dashboards/database/DatabaseManagementPage"
+}
+
+route AdminSystemHealthRoute { path: "/admin/system-health", to: AdminSystemHealthPage }
+page AdminSystemHealthPage {
+  authRequired: true,
+  component: import SystemHealthPage from "@src/client/pages/admin/dashboards/system/SystemHealthPage"
+}
+
+route AdminFeatureAnalyticsRoute { path: "/admin/feature-analytics", to: AdminFeatureAnalyticsPage }
+page AdminFeatureAnalyticsPage {
+  authRequired: true,
+  component: import FeatureAnalyticsDashboard from "@src/client/pages/admin/dashboards/FeatureAnalyticsDashboard"
+}
+
+route NotFoundRoute { path: "*", to: NotFoundPage }
+page NotFoundPage {
+  component: import { NotFoundPage } from "@src/client/components/NotFoundPage"
+}
+
+job dailyStatsJob {
+  executor: PgBoss,
+  perform: {
+    fn: import { calculateDailyStats } from "@src/core/analytics/stats"
+  },
+  schedule: {
+    cron: "0 * * * *" // Run every hour
+  },
+  entities: [User, Workspace, DailyStats, PageViewSource, Logs, SystemLog, Notification]
+}
+
+job cleanupExpiredInvitationsJob {
+  executor: PgBoss,
+  perform: {
+    fn: import { cleanupExpiredInvitations } from "@src/core/workspace/cleanup"
+  },
+  schedule: {
+    cron: "0 2 * * *" // Run daily at 2 AM
+  },
+  entities: [WorkspaceInvitation]
+}
+
+job cleanupOldLogsJob {
+  executor: PgBoss,
+  perform: {
+    fn: import { cleanupOldLogs } from "@src/core/logs/retention"
+  },
+  schedule: {
+    cron: "0 3 * * *" // Run daily at 3 AM
+  },
+  entities: [SystemLog, AuditLog]
+}
+
+job cleanupExpiredRefreshTokensJob {
+  executor: PgBoss,
+  perform: {
+    fn: import { cleanupExpiredRefreshTokens } from "@src/core/auth/refreshToken"
+  },
+  schedule: {
+    cron: "0 4 * * *" // Run daily at 4 AM
+  },
+  entities: [RefreshToken]
+}
+
+job garbageCollectWorkspacesJob {
+  executor: PgBoss,
+  perform: {
+    fn: import { garbageCollectWorkspaces } from "@src/core/workspace/cleanup"
+  },
+  schedule: {
+    cron: "0 5 * * *" // Run daily at 5 AM
+  },
+  entities: [Workspace, WorkspaceMember, AuditLog, Notification, WorkspaceInvitation]
+}
+
+job cleanupExpiredOwnershipTransfersJob {
+  executor: PgBoss,
+  perform: {
+    fn: import { cleanupExpiredOwnershipTransfers } from "@src/core/workspace/cleanup"
+  },
+  schedule: {
+    cron: "0 6 * * *" // Run daily at 6 AM
+  },
+  entities: [OwnershipTransferConfirmation]
+}
+
+job processNotificationRetriesJob {
+  executor: PgBoss,
+  perform: {
+    fn: import { processPendingRetries } from "@src/core/notifications/deliveryService"
+  },
+  schedule: {
+    cron: "*/5 * * * *" // Run every 5 minutes
+  },
+  entities: [NotificationDeliveryLog]
+}
+
+job cleanupOldNotificationsJob {
+  executor: PgBoss,
+  perform: {
+    fn: import { cleanupOldNotifications } from "@src/core/notifications/cleanup"
+  },
+  schedule: {
+    cron: "0 7 * * *" // Run daily at 7 AM
+  },
+  entities: [Notification, NotificationDeliveryLog]
+}
+
+job sendNotificationDigestsJob {
+  executor: PgBoss,
+  perform: {
+    fn: import { sendDigests } from "@src/core/notifications/digest"
+  },
+  schedule: {
+    cron: "0 */1 * * *" // Run every hour (checks user digest time)
+  },
+  entities: [Notification, NotificationPreference, User, Workspace]
+}
+
+job dailyBackupJob {
+  executor: PgBoss,
+  perform: {
+    fn: import { performDailyBackup } from "@src/core/database/backupJob"
+  },
+  schedule: {
+    cron: "0 1 * * *" // Run daily at 1 AM
+  },
+  entities: []
+}
+
+//#region Database Management (Backup, Recovery, Monitoring)
+query getBackupList {
+  fn: import { getBackupList } from "@src/core/database/operations",
+  entities: [User]
+}
+
+query getBackupStats {
+  fn: import { getBackupStats } from "@src/core/database/operations",
+  entities: [User]
+}
+
+action triggerManualBackup {
+  fn: import { triggerManualBackup } from "@src/core/database/operations",
+  entities: [User]
+}
+
+query getRecoveryPoints {
+  fn: import { getRecoveryPoints } from "@src/core/database/operations",
+  entities: [User]
+}
+
+action testDisasterRecovery {
+  fn: import { testDisasterRecovery } from "@src/core/database/operations",
+  entities: [User]
+}
+
+query getSlowQueryStats {
+  fn: import { getSlowQueryStats } from "@src/core/database/operations",
+  entities: [User]
+}
+
+action resetSlowQueryStats {
+  fn: import { resetSlowQueryStats } from "@src/core/database/operations",
+  entities: [User]
+}
+
+action runConnectionPoolLoadTest {
+  fn: import { runConnectionPoolLoadTest } from "@src/core/database/operations",
+  entities: [User]
+}
+
+action testConnectionLimits {
+  fn: import { testConnectionLimits } from "@src/core/database/operations",
+  entities: [User]
+}
+//#endregion
+
+//#region System Logs (Technical Logs)
+query getSystemLogs {
+  fn: import { getSystemLogs } from "@src/core/logs/operations",
+  entities: [SystemLog]
+}
+//#endregion
+
+//#region Audit Logs (Compliance & Security)
+query getAuditLogs {
+  fn: import { getAuditLogs } from "@src/core/audit/operations",
+  entities: [AuditLog, User, Workspace, WorkspaceMember]
+}
+
+query getAuditLogsByResource {
+  fn: import { getAuditLogsByResource } from "@src/core/audit/operations",
+  entities: [AuditLog, User, Workspace]
+}
+
+query exportAuditLogs {
+  fn: import { exportAuditLogs } from "@src/core/audit/operations",
+  entities: [AuditLog, Workspace, User]
+}
+
+query getAllAuditLogsForAdmin {
+  fn: import { getAllAuditLogsForAdmin } from "@src/core/audit/operations",
+  entities: [AuditLog, User, Workspace]
+}
+//#endregion
+
+//#region Notifications
+query getNotifications {
+  fn: import { getNotifications } from "@src/core/notifications/operations",
+  entities: [Notification, User, Workspace]
+}
+
+query getUnreadCount {
+  fn: import { getUnreadCount } from "@src/core/notifications/operations",
+  entities: [Notification]
+}
+
+action markAsRead {
+  fn: import { markAsRead } from "@src/core/notifications/operations",
+  entities: [Notification]
+}
+
+action markAllAsRead {
+  fn: import { markAllAsRead } from "@src/core/notifications/operations",
+  entities: [Notification]
+}
+
+query getNotificationProviders {
+  fn: import { getNotificationProviders } from "@src/core/notifications/operations",
+  entities: [NotificationProvider, Workspace, WorkspaceMember]
+}
+
+action saveNotificationProvider {
+  fn: import { saveNotificationProvider } from "@src/core/notifications/operations",
+  entities: [NotificationProvider, Workspace, WorkspaceMember]
+}
+
+action toggleNotificationProvider {
+  fn: import { toggleNotificationProvider } from "@src/core/notifications/operations",
+  entities: [NotificationProvider, WorkspaceMember]
+}
+
+action deleteNotificationProvider {
+  fn: import { deleteNotificationProvider } from "@src/core/notifications/operations",
+  entities: [NotificationProvider, WorkspaceMember]
+}
+
+// Ticket Provider Operations
+query getTicketProviders {
+  fn: import { getTicketProviders } from "@src/core/tickets/operations",
+  entities: [TicketProvider, Workspace, WorkspaceMember]
+}
+
+action saveTicketProvider {
+  fn: import { saveTicketProvider } from "@src/core/tickets/operations",
+  entities: [TicketProvider, Workspace, WorkspaceMember]
+}
+
+action toggleTicketProvider {
+  fn: import { toggleTicketProvider } from "@src/core/tickets/operations",
+  entities: [TicketProvider, WorkspaceMember]
+}
+
+action deleteTicketProvider {
+  fn: import { deleteTicketProvider } from "@src/core/tickets/operations",
+  entities: [TicketProvider, WorkspaceMember]
+}
+
+action deleteNotification {
+  fn: import { deleteNotification } from "@src/core/notifications/operations",
+  entities: [Notification]
+}
+
+action deleteAllNotifications {
+  fn: import { deleteAllNotifications } from "@src/core/notifications/operations",
+  entities: [Notification]
+}
+
+query getNotificationPreferences {
+  fn: import { getNotificationPreferences } from "@src/core/notifications/operations",
+  entities: [NotificationPreference, User]
+}
+
+action updateNotificationPreferences {
+  fn: import { updateNotificationPreferences } from "@src/core/notifications/operations",
+  entities: [NotificationPreference, User]
+}
+
+// Push Notification Subscriptions
+action savePushSubscription {
+  fn: import { savePushSubscription } from "@src/core/notifications/operations",
+  entities: [PushSubscription, NotificationPreference, User]
+}
+
+action removePushSubscription {
+  fn: import { removePushSubscription } from "@src/core/notifications/operations",
+  entities: [PushSubscription, NotificationPreference]
+}
+
+query getPushSubscriptions {
+  fn: import { getPushSubscriptions } from "@src/core/notifications/operations",
+  entities: [PushSubscription]
+}
+
+action removeAllPushSubscriptions {
+  fn: import { removeAllPushSubscriptions } from "@src/core/notifications/operations",
+  entities: [PushSubscription, NotificationPreference]
+}
+//#endregion
+
+//#region Contact Form Messages
+query getContactMessages {
+  fn: import { getContactMessages } from "@src/core/messages/operations",
+  entities: [ContactFormMessage, User]
+}
+
+action sendContactMessage {
+  fn: import { sendContactMessage } from "@src/core/messages/operations",
+  entities: [ContactFormMessage, User]
+}
+
+action markMessageAsRead {
+  fn: import { markMessageAsRead } from "@src/core/messages/operations",
+  entities: [ContactFormMessage]
+}
+
+action markMessageAsReplied {
+  fn: import { markMessageAsReplied } from "@src/core/messages/operations",
+  entities: [ContactFormMessage]
+}
+
+action deleteContactMessage {
+  fn: import { deleteContactMessage } from "@src/core/messages/operations",
+  entities: [ContactFormMessage]
+}
+
+route AdminMessagesRoute { path: "/admin/messages", to: AdminMessagesPage }
+page AdminMessagesPage {
+  authRequired: true,
+  component: import AdminMessages from "@src/client/pages/admin/dashboards/messages/MessagesPage"
+}
+
+route AdminAuditLogsRoute { path: "/admin/audit", to: AdminAuditLogsPage }
+page AdminAuditLogsPage {
+  authRequired: true,
+  component: import AuditLogViewer from "@src/client/pages/admin/dashboards/audit/AuditLogViewerPage"
+}
+//#endregion
+
+//#region Workspaces
+// Queries
+query getUserWorkspaces {
+  fn: import { getUserWorkspaces } from "@src/core/workspace/operations",
+  entities: [User, Workspace, WorkspaceMember]
+}
+
+query getAllWorkspacesForAdmin {
+  fn: import { getAllWorkspacesForAdmin } from "@src/core/workspace/operations",
+  entities: [User, Workspace, WorkspaceMember]
+}
+
+query getWorkspaceCount {
+  fn: import { getWorkspaceCount } from "@src/core/workspace/operations",
+  entities: [Workspace]
+}
+
+query getSystemLogCount {
+  fn: import { getSystemLogCount } from "@src/core/workspace/operations",
+  entities: [SystemLog]
+}
+
+query getNotificationCount {
+  fn: import { getNotificationCount } from "@src/core/workspace/operations",
+  entities: [Notification, NotificationDeliveryLog]
+}
+
+query getContactMessagesCount {
+  fn: import { getContactMessagesCount } from "@src/core/workspace/operations",
+  entities: [ContactFormMessage]
+}
+
+query getWorkspaceDetails {
+  fn: import { getWorkspaceDetails } from "@src/core/workspace/operations",
+  entities: [User, Workspace, WorkspaceMember, WorkspaceInvitation, Notification, AuditLog]
+}
+
+action suspendWorkspace {
+  fn: import { suspendWorkspace } from "@src/core/workspace/operations",
+  entities: [User, Workspace, SystemLog]
+}
+
+action updateWorkspaceQuotas {
+  fn: import { updateWorkspaceQuotas } from "@src/core/workspace/operations",
+  entities: [User, Workspace, SystemLog]
+}
+
+query getCurrentWorkspace {
+  fn: import { getCurrentWorkspace } from "@src/core/workspace/operations",
+  entities: [User, Workspace, WorkspaceMember]
+}
+
+query getWorkspaceMembers {
+  fn: import { getWorkspaceMembers } from "@src/core/workspace/operations",
+  entities: [User, Workspace, WorkspaceMember]
+}
+
+query getWorkspaceById {
+  fn: import { getWorkspaceById } from "@src/core/workspace/operations",
+  entities: [User, Workspace, WorkspaceMember]
+}
+
+query checkSlugAvailability {
+  fn: import { checkSlugAvailability } from "@src/core/workspace/operations",
+  entities: [Workspace]
+}
+
+// Actions
+action createWorkspace {
+  fn: import { createWorkspace } from "@src/core/workspace/operations",
+  entities: [User, Workspace, WorkspaceMember]
+}
+
+action updateWorkspace {
+  fn: import { updateWorkspace } from "@src/core/workspace/operations",
+  entities: [User, Workspace, WorkspaceMember]
+}
+
+action deleteWorkspace {
+  fn: import { deleteWorkspace } from "@src/core/workspace/operations",
+  entities: [User, Workspace, WorkspaceMember]
+}
+
+action restoreWorkspace {
+  fn: import { restoreWorkspace } from "@src/core/workspace/operations",
+  entities: [User, Workspace, WorkspaceMember]
+}
+
+action switchWorkspace {
+  fn: import { switchWorkspace } from "@src/core/workspace/operations",
+  entities: [User, Workspace, WorkspaceMember]
+}
+
+action completeOnboarding {
+  fn: import { completeOnboarding } from "@src/core/workspace/operations",
+  entities: [User, Workspace, WorkspaceMember]
+}
+
+action inviteMemberToWorkspace {
+  fn: import { inviteMemberToWorkspace } from "@src/core/workspace/operations",
+  entities: [User, Workspace, WorkspaceMember]
+}
+
+action removeMemberFromWorkspace {
+  fn: import { removeMemberFromWorkspace } from "@src/core/workspace/operations",
+  entities: [User, Workspace, WorkspaceMember]
+}
+
+action updateMemberRole {
+  fn: import { updateMemberRole } from "@src/core/workspace/operations",
+  entities: [User, Workspace, WorkspaceMember]
+}
+
+action leaveWorkspace {
+  fn: import { leaveWorkspace } from "@src/core/workspace/operations",
+  entities: [User, Workspace, WorkspaceMember]
+}
+
+action transferWorkspaceOwnership {
+  fn: import { transferWorkspaceOwnership } from "@src/core/workspace/operations",
+  entities: [User, Workspace, WorkspaceMember, OwnershipTransferConfirmation]
+}
+
+action sendWorkspaceInvitation {
+  fn: import { sendWorkspaceInvitation } from "@src/core/workspace/operations",
+  entities: [User, Workspace, WorkspaceMember, WorkspaceInvitation]
+}
+
+action acceptWorkspaceInvitation {
+  fn: import { acceptWorkspaceInvitation } from "@src/core/workspace/operations",
+  entities: [User, Workspace, WorkspaceMember, WorkspaceInvitation]
+}
+
+query getWorkspaceInvitations {
+  fn: import { getWorkspaceInvitations } from "@src/core/workspace/operations",
+  entities: [Workspace, WorkspaceInvitation, WorkspaceMember]
+}
+
+query getWorkspaceUsage {
+  fn: import { getWorkspaceUsage } from "@src/core/workspace/operations",
+  entities: [Workspace, WorkspaceMember]
+}
+
+query getStorageStats {
+  fn: import { getStorageStats } from "@src/core/workspace/operations",
+  entities: [Workspace]
+}
+
+query exportWorkspaceData {
+  fn: import { exportWorkspaceData } from "@src/core/workspace/operations",
+  entities: [Workspace, WorkspaceMember, AuditLog, Notification, WorkspaceInvitation]
+}
+
+action confirmOwnershipTransfer {
+  fn: import { confirmOwnershipTransfer } from "@src/core/workspace/operations",
+  entities: [Workspace, WorkspaceMember, OwnershipTransferConfirmation, User, AuditLog, Notification]
+}
+
+action updateWorkspaceBranding {
+  fn: import { updateWorkspaceBranding } from "@src/core/workspace/operations",
+  entities: [Workspace, WorkspaceMember, AuditLog]
+}
+
+action updateWorkspaceSessionTimeout {
+  fn: import { updateWorkspaceSessionTimeout } from "@src/core/workspace/operations",
+  entities: [Workspace, WorkspaceMember, AuditLog]
+}
+//#endregion
+
+//#region Two-Factor Authentication
+action enable2FA {
+  fn: import { enable2FA } from "@src/core/auth/twoFactorOperations",
+  entities: [User]
+}
+
+action verify2FA {
+  fn: import { verify2FA } from "@src/core/auth/twoFactorOperations",
+  entities: [User]
+}
+
+action disable2FA {
+  fn: import { disable2FA } from "@src/core/auth/twoFactorOperations",
+  entities: [User]
+}
+
+action generateNew2FABackupCodes {
+  fn: import { generateNew2FABackupCodes } from "@src/core/auth/twoFactorOperations",
+  entities: [User]
+}
+//#endregion
+
+//#region IP Whitelist Management
+query getWorkspaceIpWhitelist {
+  fn: import { getWorkspaceIpWhitelist } from "@src/core/auth/ipWhitelistOperations",
+  entities: [Workspace, WorkspaceMember]
+}
+
+action updateWorkspaceIpWhitelist {
+  fn: import { updateWorkspaceIpWhitelist } from "@src/core/auth/ipWhitelistOperations",
+  entities: [Workspace, WorkspaceMember, AuditLog]
+}
+
+action addIpToWhitelist {
+  fn: import { addIpToWhitelist } from "@src/core/auth/ipWhitelistOperations",
+  entities: [Workspace, WorkspaceMember, AuditLog]
+}
+
+action removeIpFromWhitelist {
+  fn: import { removeIpFromWhitelist } from "@src/core/auth/ipWhitelistOperations",
+  entities: [Workspace, WorkspaceMember, AuditLog]
+}
+
+action toggleIpWhitelist {
+  fn: import { toggleIpWhitelist } from "@src/core/auth/ipWhitelistOperations",
+  entities: [Workspace, WorkspaceMember, AuditLog]
+}
+//#endregion
+
+//#region Job Monitoring
+query getJobStats {
+  fn: import { getJobStats } from "@src/core/jobs/operations",
+  entities: [SystemLog]
+}
+
+query getJobHistory {
+  fn: import { getJobHistory } from "@src/core/jobs/operations",
+  entities: [SystemLog]
+}
+
+query getJobErrors {
+  fn: import { getJobErrors } from "@src/core/jobs/operations",
+  entities: [SystemLog]
+}
+
+action triggerJob {
+  fn: import { triggerJob } from "@src/core/jobs/operations",
+  entities: [SystemLog]
+}
+
+query getJobControl {
+  fn: import { getJobControl } from "@src/core/jobs/operations",
+  entities: [JobControl]
+}
+
+action pauseJob {
+  fn: import { pauseJob } from "@src/core/jobs/operations",
+  entities: [JobControl, SystemLog]
+}
+
+action resumeJob {
+  fn: import { resumeJob } from "@src/core/jobs/operations",
+  entities: [JobControl, SystemLog]
+}
+
+action updateJobSchedule {
+  fn: import { updateJobSchedule } from "@src/core/jobs/operations",
+  entities: [JobControl, SystemLog]
+}
+
+query getDeadLetterQueue {
+  fn: import { getDeadLetterQueue } from "@src/core/jobs/operations",
+  entities: [DeadLetterQueue]
+}
+
+action retryDeadLetterJob {
+  fn: import { retryDeadLetterJob } from "@src/core/jobs/operations",
+  entities: [DeadLetterQueue, SystemLog]
+}
+
+action resolveDeadLetterJob {
+  fn: import { resolveDeadLetterJob } from "@src/core/jobs/operations",
+  entities: [DeadLetterQueue, SystemLog]
+}
+//#endregion
+
+//#region System Health Monitoring
+query getSystemHealth {
+  fn: import { getSystemHealth } from "@src/core/system/operations",
+  entities: [SystemLog]
+}
+
+query getDatabaseMetrics {
+  fn: import { getDatabaseMetrics } from "@src/core/system/operations",
+  entities: [SystemLog]
+}
+
+query getInfrastructureStatus {
+  fn: import { getInfrastructureStatus } from "@src/core/system/operations",
+  entities: [SystemLog]
+}
+//#endregion
+
+//#region Workspace Analytics
+query getWorkspaceAnalytics {
+  fn: import { getWorkspaceAnalytics } from "@src/core/analytics/workspaceAnalytics",
+  entities: [User, Workspace, WorkspaceMember, Notification, WorkspaceInvitation, AuditLog, PushSubscription]
+}
+//#endregion
+
+//#region Workspace Routes
+// Routes
+route OnboardingRoute { path: "/onboarding", to: OnboardingPage }
+page OnboardingPage {
+  authRequired: true,
+  component: import OnboardingPage from "@src/client/pages/workspace/onboarding/OnboardingPage"
+}
+
+route WorkspaceSelectorRoute { path: "/workspaces", to: WorkspaceSelectorPage }
+page WorkspaceSelectorPage {
+  authRequired: true,
+  component: import WorkspaceSelectorPage from "@src/client/pages/workspace/selector/WorkspaceSelectorPage"
+}
+
+route WorkspaceSettingsRoute { path: "/workspace/settings", to: WorkspaceSettingsPage }
+page WorkspaceSettingsPage {
+  authRequired: true,
+  component: import WorkspaceSettingsPage from "@src/client/pages/workspace/settings/WorkspaceSettingsPage"
+}
+
+route WorkspaceMembersRoute { path: "/workspace/members", to: WorkspaceMembersPage }
+page WorkspaceMembersPage {
+  authRequired: true,
+  component: import WorkspaceMembersPage from "@src/client/pages/workspace/members/WorkspaceMembersPage"
+}
+
+route WorkspaceCreateRoute { path: "/workspace/create", to: WorkspaceCreatePage }
+page WorkspaceCreatePage {
+  authRequired: true,
+  component: import WorkspaceCreatePage from "@src/client/pages/workspace/create/WorkspaceCreatePage"
+}
+
+route DashboardRoute { path: "/dashboard", to: DashboardPage }
+page DashboardPage {
+  authRequired: true,
+  component: import DashboardPage from "@src/client/pages/DashboardPage"
+}
+
+route InviteAcceptRoute { path: "/invite/:token", to: InviteAcceptPage }
+page InviteAcceptPage {
+  authRequired: false,
+  component: import InviteAcceptPage from "@src/client/pages/workspace/invite/InviteAcceptPage"
+}
+
+route ConfirmOwnershipRoute { path: "/workspace/confirm-ownership/:token", to: ConfirmOwnershipPage }
+page ConfirmOwnershipPage {
+  authRequired: true,
+  component: import ConfirmOwnershipPage from "@src/client/pages/workspace/ownership/ConfirmOwnershipPage"
+}
+
+//#endregion
+
+//#region Modules
+route ModulesRoute { path: "/modules", to: ModulesPage }
+page ModulesPage {
+  authRequired: true,
+  component: import ModulesPage from "@src/client/pages/modules/ModulesPage"
+}
+
+route MonitoringRoute { path: "/modules/monitoring/dashboard", to: MonitoringPage }
+page MonitoringPage {
+  authRequired: true,
+  component: import MonitoringPage from "@src/client/pages/modules/monitoring/MonitoringPage"
+}
+
+// Aegis Module - Incident Management
+route AegisRoute { path: "/modules/aegis/dashboard", to: AegisDashboardPage }
+page AegisDashboardPage {
+  authRequired: true,
+  component: import AegisDashboardPage from "@src/client/pages/modules/aegis/AegisDashboardPage"
+}
+
+route AegisAlertsRoute { path: "/modules/aegis/alerts", to: AegisAlertsPage }
+page AegisAlertsPage {
+  authRequired: true,
+  component: import AegisAlertsPage from "@src/client/pages/modules/aegis/alerts/AlertsPage"
+}
+
+route AegisAlertDetailRoute { path: "/modules/aegis/alerts/:id", to: AegisAlertDetailPage }
+page AegisAlertDetailPage {
+  authRequired: true,
+  component: import AegisAlertDetailPage from "@src/client/pages/modules/aegis/alerts/AlertDetailPage"
+}
+
+route AegisIncidentsRoute { path: "/modules/aegis/incidents", to: AegisIncidentsPage }
+page AegisIncidentsPage {
+  authRequired: true,
+  component: import AegisIncidentsPage from "@src/client/pages/modules/aegis/incidents/IncidentsPage"
+}
+
+route AegisIncidentDetailRoute { path: "/modules/aegis/incidents/:id", to: AegisIncidentDetailPage }
+page AegisIncidentDetailPage {
+  authRequired: true,
+  component: import AegisIncidentDetailPage from "@src/client/pages/modules/aegis/incidents/IncidentDetailPage"
+}
+
+route AegisCasesRoute { path: "/modules/aegis/cases", to: AegisCasesPage }
+page AegisCasesPage {
+  authRequired: true,
+  component: import AegisCasesPage from "@src/client/pages/modules/aegis/cases/CasesPage"
+}
+
+route AegisCaseDetailRoute { path: "/modules/aegis/cases/:id", to: AegisCaseDetailPage }
+page AegisCaseDetailPage {
+  authRequired: true,
+  component: import AegisCaseDetailPage from "@src/client/pages/modules/aegis/cases/CaseDetailPage"
+}
+
+
+
+route WorkspaceAnalyticsRoute { path: "/workspace/analytics", to: WorkspaceAnalyticsPage }
+page WorkspaceAnalyticsPage {
+  authRequired: true,
+  component: import WorkspaceAnalyticsPage from "@src/client/pages/WorkspaceAnalyticsPage"
+}
+
+//#region ECLIPSE Module - Brand Protection & Intellectual Property Monitoring
+
+// Routes & Pages
+route EclipseDashboardRoute { path: "/modules/eclipse/dashboard", to: EclipseDashboardPage }
+page EclipseDashboardPage {
+  authRequired: true,
+  component: import EclipseDashboardPage from "@src/client/pages/modules/eclipse/dashboard/EclipseDashboardPage"
+}
+
+route EclipseBrandsRoute { path: "/modules/eclipse/brands", to: EclipseBrandsPage }
+page EclipseBrandsPage {
+  authRequired: true,
+  component: import EclipseBrandsPage from "@src/client/pages/modules/eclipse/brands/BrandsPage"
+}
+
+route EclipseBrandDetailsRoute { path: "/modules/eclipse/brands/:brandId", to: EclipseBrandDetailsPage }
+page EclipseBrandDetailsPage {
+  authRequired: true,
+  component: import EclipseBrandDetailsPage from "@src/client/pages/modules/eclipse/brands/BrandDetailsPage"
+}
+
+route EclipseBrandConfigRoute { path: "/modules/eclipse/brands/:brandId/config", to: EclipseBrandConfigPage }
+page EclipseBrandConfigPage {
+  authRequired: true,
+  component: import EclipseBrandConfigPage from "@src/client/pages/modules/eclipse/brands/BrandConfigPage"
+}
+
+route EclipseMonitoringRoute { path: "/modules/eclipse/monitoring", to: EclipseMonitoringPage }
+page EclipseMonitoringPage {
+  authRequired: true,
+  component: import EclipseMonitoringPage from "@src/client/pages/modules/eclipse/monitoring/MonitoringPage"
+}
+
+route EclipseMonitorDetailsRoute { path: "/modules/eclipse/monitoring/:id", to: EclipseMonitorDetailsPage }
+page EclipseMonitorDetailsPage {
+  authRequired: true,
+  component: import EclipseMonitorDetailsPage from "@src/client/pages/modules/eclipse/monitoring/MonitorDetailsPage"
+}
+
+route EclipseAlertsRoute { path: "/modules/eclipse/detections", to: EclipseAlertsPage }
+page EclipseAlertsPage {
+  authRequired: true,
+  component: import EclipseAlertsPage from "@src/client/pages/modules/eclipse/detections/DetectionsPage"
+}
+
+route EclipseAlertDetailRoute { path: "/modules/eclipse/detections/:id", to: EclipseAlertDetailPage }
+page EclipseAlertDetailPage {
+  authRequired: true,
+  component: import EclipseAlertDetailPage from "@src/client/pages/modules/eclipse/detections/DetectionDetailsPage"
+}
+
+route EclipseInfringementsRoute { path: "/modules/eclipse/infringements", to: EclipseInfringementsPage }
+page EclipseInfringementsPage {
+  authRequired: true,
+  component: import EclipseInfringementsPage from "@src/client/pages/modules/eclipse/infringements/InfringementsPage"
+}
+
+route EclipseInfringementDetailRoute { path: "/modules/eclipse/infringements/:id", to: EclipseInfringementDetailPage }
+page EclipseInfringementDetailPage {
+  authRequired: true,
+  component: import EclipseInfringementDetailPage from "@src/client/pages/modules/eclipse/infringements/InfringementDetailsPage"
+}
+
+route EclipseActionsRoute { path: "/modules/eclipse/actions", to: EclipseActionsPage }
+page EclipseActionsPage {
+  authRequired: true,
+  component: import EclipseActionsPage from "@src/client/pages/modules/eclipse/actions/ActionsPage"
+}
+
+route EclipseActionDetailsRoute { path: "/modules/eclipse/actions/:id", to: EclipseActionDetailsPage }
+page EclipseActionDetailsPage {
+  authRequired: true,
+  component: import EclipseActionDetailsPage from "@src/client/pages/modules/eclipse/actions/ActionDetailsPage"
+}
+
+// Brand Operations
+query getEclipseBrands {
+  fn: import { getEclipseBrands } from "@src/core/modules/eclipse/operations",
+  entities: [EclipseBrand, Workspace, WorkspaceMember, BrandMonitor, BrandInfringement, AuditLog]
+}
+
+query getEclipseBrandById {
+  fn: import { getEclipseBrandById } from "@src/core/modules/eclipse/operations",
+  entities: [EclipseBrand, Workspace, WorkspaceMember, BrandMonitor, BrandAlert, BrandInfringement, InfringementAction]
+}
+
+action createEclipseBrand {
+  fn: import { createEclipseBrand } from "@src/core/modules/eclipse/operations",
+  entities: [EclipseBrand, Workspace, WorkspaceMember, AuditLog]
+}
+
+action updateEclipseBrand {
+  fn: import { updateEclipseBrand } from "@src/core/modules/eclipse/operations",
+  entities: [EclipseBrand, WorkspaceMember, AuditLog]
+}
+
+action deleteEclipseBrand {
+  fn: import { deleteEclipseBrand } from "@src/core/modules/eclipse/operations",
+  entities: [EclipseBrand, WorkspaceMember, AuditLog]
+}
+
+// Monitor Operations
+query getEclipseMonitors {
+  fn: import { getEclipseMonitors } from "@src/core/modules/eclipse/operations",
+  entities: [BrandMonitor, EclipseBrand, Workspace, WorkspaceMember, BrandAlert, AuditLog]
+}
+
+query getMonitorDetails {
+  fn: import { getMonitorDetails } from "@src/core/modules/eclipse/operations",
+  entities: [BrandMonitor, EclipseBrand, Workspace, WorkspaceMember, BrandAlert, BrandInfringement]
+}
+
+action createEclipseMonitor {
+  fn: import { createEclipseMonitor } from "@src/core/modules/eclipse/operations",
+  entities: [BrandMonitor, EclipseBrand, Workspace, WorkspaceMember, AuditLog]
+}
+
+action updateEclipseMonitor {
+  fn: import { updateEclipseMonitor } from "@src/core/modules/eclipse/operations",
+  entities: [BrandMonitor, WorkspaceMember, AuditLog]
+}
+
+action testEclipseMonitor {
+  fn: import { testEclipseMonitor } from "@src/core/modules/eclipse/operations",
+  entities: [BrandMonitor, WorkspaceMember, AuditLog]
+}
+
+// Alert Operations
+query getEclipseAlerts {
+  fn: import { getEclipseAlerts } from "@src/core/modules/eclipse/operations",
+  entities: [BrandAlert, BrandMonitor, EclipseBrand, Workspace, WorkspaceMember, BrandInfringement, AuditLog]
+}
+
+action createEclipseAlert {
+  fn: import { createEclipseAlert } from "@src/core/modules/eclipse/operations",
+  entities: [BrandAlert, BrandMonitor, EclipseBrand, Workspace, AuditLog, Notification, WorkspaceMember]
+}
+
+action acknowledgeEclipseAlert {
+  fn: import { acknowledgeEclipseAlert } from "@src/core/modules/eclipse/operations",
+  entities: [BrandAlert, WorkspaceMember, AuditLog]
+}
+
+// Infringement Operations
+query getEclipseInfringements {
+  fn: import { getEclipseInfringements } from "@src/core/modules/eclipse/operations",
+  entities: [BrandInfringement, EclipseBrand, Workspace, WorkspaceMember, InfringementAction, Incident, AuditLog]
+}
+
+query getInfringementDetails {
+  fn: import { getInfringementDetails } from "@src/core/modules/eclipse/operations",
+  entities: [BrandInfringement, EclipseBrand, Workspace, WorkspaceMember, InfringementAction, BrandAlert, Incident]
+}
+
+action createEclipseInfringement {
+  fn: import { createEclipseInfringement } from "@src/core/modules/eclipse/operations",
+  entities: [BrandInfringement, EclipseBrand, Workspace, WorkspaceMember, AuditLog, Notification, Incident]
+}
+
+action escalateEclipseAlert {
+  fn: import { escalateEclipseAlert } from "@src/core/modules/eclipse/operations",
+  entities: [BrandAlert, BrandInfringement, EclipseBrand, BrandMonitor, Workspace, WorkspaceMember, AuditLog, Notification]
+}
+
+action updateEclipseInfringementStatus {
+  fn: import { updateEclipseInfringementStatus } from "@src/core/modules/eclipse/operations",
+  entities: [BrandInfringement, EclipseBrand, WorkspaceMember, AuditLog, Notification]
+}
+
+// Aegis Integration Operations
+action escalateInfringementToAegis {
+  fn: import { escalateInfringementToAegis } from "@src/core/modules/eclipse/operations",
+  entities: [BrandInfringement, EclipseBrand, Workspace, WorkspaceMember, Incident, AuditLog, Notification]
+}
+
+action syncInfringementAegisStatus {
+  fn: import { syncInfringementAegisStatus } from "@src/core/modules/eclipse/operations",
+  entities: [BrandInfringement, Incident, AuditLog, Notification]
+}
+
+query getLinkedAegisIncident {
+  fn: import { getLinkedAegisIncident } from "@src/core/modules/eclipse/operations",
+  entities: [BrandInfringement, Incident, Workspace, WorkspaceMember]
+}
+
+// Action Operations
+query getEclipseActions {
+  fn: import { getEclipseActions } from "@src/core/modules/eclipse/operations",
+  entities: [InfringementAction, BrandInfringement, EclipseBrand, Workspace, WorkspaceMember]
+}
+
+query getActionDetails {
+  fn: import { getActionDetails } from "@src/core/modules/eclipse/operations",
+  entities: [InfringementAction, BrandInfringement, EclipseBrand, Workspace, WorkspaceMember, BrandAlert]
+}
+
+action createEclipseAction {
+  fn: import { createEclipseAction } from "@src/core/modules/eclipse/operations",
+  entities: [InfringementAction, BrandInfringement, Workspace, WorkspaceMember, AuditLog, Notification]
+}
+
+action updateEclipseActionStatus {
+  fn: import { updateEclipseActionStatus } from "@src/core/modules/eclipse/operations",
+  entities: [InfringementAction, WorkspaceMember, AuditLog]
+}
+
+// Stats Operations
+query getEclipseBrandStats {
+  fn: import { getEclipseBrandStats } from "@src/core/modules/eclipse/operations",
+  entities: [EclipseBrand, BrandInfringement, InfringementAction, Workspace, WorkspaceMember]
+}
+
+// Export/Import Operations
+query exportEclipseData {
+  fn: import { exportEclipseData } from "@src/core/modules/eclipse/operations",
+  entities: [BrandAlert, BrandInfringement, InfringementAction, EclipseBrand, BrandMonitor, Workspace, WorkspaceMember]
+}
+
+query generateEclipseReport {
+  fn: import { generateEclipseReport } from "@src/core/modules/eclipse/operations",
+  entities: [EclipseBrand, BrandMonitor, BrandAlert, BrandInfringement, InfringementAction, Workspace, WorkspaceMember]
+}
+
+action importBrandsFromCSV {
+  fn: import { importBrandsFromCSV } from "@src/core/modules/eclipse/operations",
+  entities: [EclipseBrand, Workspace, WorkspaceMember, AuditLog]
+}
+
+// Bulk Operations
+action bulkUpdateAlerts {
+  fn: import { bulkUpdateAlerts } from "@src/core/modules/eclipse/operations",
+  entities: [BrandAlert, BrandInfringement, EclipseBrand, BrandMonitor, Workspace, WorkspaceMember, AuditLog, Notification]
+}
+
+action bulkUpdateInfringements {
+  fn: import { bulkUpdateInfringements } from "@src/core/modules/eclipse/operations",
+  entities: [BrandInfringement, Workspace, WorkspaceMember, AuditLog, Notification]
+}
+
+action bulkUpdateActions {
+  fn: import { bulkUpdateActions } from "@src/core/modules/eclipse/operations",
+  entities: [InfringementAction, BrandInfringement, Workspace, WorkspaceMember, User, AuditLog, Notification]
+}
+
+query getEclipseMonitoringMetrics {
+  fn: import { getEclipseMonitoringMetrics } from "@src/core/modules/eclipse/operations",
+  entities: [BrandMonitor, BrandAlert, BrandInfringement, Workspace, WorkspaceMember]
+}
+
+// Dashboard
+query getEclipseDashboardData {
+  fn: import { getEclipseDashboardData } from "@src/core/modules/eclipse/operations",
+  entities: [EclipseBrand, BrandMonitor, BrandAlert, BrandInfringement, InfringementAction, Workspace, WorkspaceMember, AuditLog]
+}
+
+// Detection Details Operations
+query getWorkspaceAlerts {
+  fn: import { getWorkspaceAlerts } from "@src/core/modules/eclipse/detections/operations",
+  entities: [BrandAlert, BrandMonitor, EclipseBrand, WorkspaceMember, Workspace]
+}
+
+query getMonitorAlerts {
+  fn: import { getMonitorAlerts } from "@src/core/modules/eclipse/detections/operations",
+  entities: [BrandAlert, BrandMonitor, WorkspaceMember, Workspace]
+}
+
+query getAlertDetails {
+  fn: import { getAlertDetails } from "@src/core/modules/eclipse/detections/operations",
+  entities: [BrandAlert, BrandMonitor, EclipseBrand, WorkspaceMember]
+}
+
+action updateAlertStatus {
+  fn: import { updateAlertStatus } from "@src/core/modules/eclipse/detections/operations",
+  entities: [BrandAlert, WorkspaceMember, AuditLog]
+}
+
+// Jobs
+job eclipseMonitoringJob {
+  executor: PgBoss,
+  perform: {
+    fn: import { scheduleMonitoringTasks } from "@src/core/modules/eclipse/jobs/scheduler"
+  },
+  schedule: {
+    cron: "0 */6 * * *"
+  },
+  entities: [BrandMonitor]
+}
+
+job eclipseCleanupJob {
+  executor: PgBoss,
+  perform: {
+    fn: import { cleanupEclipseData } from "@src/core/modules/eclipse/jobs/cleanup"
+  },
+  schedule: {
+    cron: "0 2 * * 0"
+  },
+  entities: [BrandAlert, BrandInfringement, BrandAlertAggregation, InfringementAction]
+}
+
+//#endregion
+
+// ============================================
+// AEGIS MODULE - Security Incident Management
+// ============================================
+
+//#region Aegis - Alert Operations
+query getAlerts {
+  fn: import { getAlerts } from "@src/core/modules/aegis/operations",
+  entities: [Alert, User, Workspace, WorkspaceMember, Observable, Incident, TimelineEvent]
+}
+
+query getAlertById {
+  fn: import { getAlertById } from "@src/core/modules/aegis/operations",
+  entities: [Alert, User, Workspace, WorkspaceMember, Observable, Incident, TimelineEvent]
+}
+
+action createAlert {
+  fn: import { createAlert } from "@src/core/modules/aegis/operations",
+  entities: [Alert, Workspace, WorkspaceMember, TimelineEvent, AuditLog, Notification]
+}
+
+action updateAlert {
+  fn: import { updateAlert } from "@src/core/modules/aegis/operations",
+  entities: [Alert, TimelineEvent, AuditLog]
+}
+
+action acknowledgeAlert {
+  fn: import { acknowledgeAlert } from "@src/core/modules/aegis/operations",
+  entities: [Alert, TimelineEvent, AuditLog]
+}
+
+action assignAlert {
+  fn: import { assignAlert } from "@src/core/modules/aegis/operations",
+  entities: [Alert, WorkspaceMember, TimelineEvent, Notification, AuditLog]
+}
+
+action dismissAlert {
+  fn: import { dismissAlert } from "@src/core/modules/aegis/operations",
+  entities: [Alert, TimelineEvent, AuditLog]
+}
+
+action escalateToIncident {
+  fn: import { escalateToIncident } from "@src/core/modules/aegis/operations",
+  entities: [Alert, Incident, Observable, TimelineEvent, AuditLog]
+}
+
+action bulkUpdateAegisAlerts {
+  fn: import { bulkUpdateAegisAlerts } from "@src/core/modules/aegis/alerts/operations",
+  entities: [Alert, TimelineEvent, AuditLog]
+}
+
+query getAlertStats {
+  fn: import { getAlertStats } from "@src/core/modules/aegis/operations",
+  entities: [Alert, Workspace, WorkspaceMember]
+}
+//#endregion
+
+//#region Aegis - Incident Operations
+query getIncidents {
+  fn: import { getIncidents } from "@src/core/modules/aegis/operations",
+  entities: [Incident, User, Workspace, WorkspaceMember, Alert, Case, Observable, Task, TimelineEvent, InvestigationNote]
+}
+
+query getIncidentById {
+  fn: import { getIncidentById } from "@src/core/modules/aegis/operations",
+  entities: [Incident, User, Workspace, WorkspaceMember, Alert, Case, Observable, Task, TimelineEvent, InvestigationNote]
+}
+
+action createIncident {
+  fn: import { createIncident } from "@src/core/modules/aegis/operations",
+  entities: [Incident, Workspace, WorkspaceMember, TimelineEvent, AuditLog, Notification]
+}
+
+action updateIncident {
+  fn: import { updateIncident } from "@src/core/modules/aegis/operations",
+  entities: [Incident, TimelineEvent, AuditLog, Notification]
+}
+
+action assignIncident {
+  fn: import { assignIncident } from "@src/core/modules/aegis/operations",
+  entities: [Incident, WorkspaceMember, TimelineEvent, Notification, AuditLog]
+}
+
+action updateIncidentProgress {
+  fn: import { updateIncidentProgress } from "@src/core/modules/aegis/operations",
+  entities: [Incident, TimelineEvent, AuditLog]
+}
+
+action addIncidentNote {
+  fn: import { addIncidentNote } from "@src/core/modules/aegis/operations",
+  entities: [Incident, InvestigationNote, User, TimelineEvent]
+}
+
+action applyPlaybook {
+  fn: import { applyPlaybook } from "@src/core/modules/aegis/operations",
+  entities: [Incident, Task, TimelineEvent]
+}
+
+action checkSLA {
+  fn: import { checkSLA } from "@src/core/modules/aegis/operations",
+  entities: [Incident, User, Notification]
+}
+
+action resolveIncident {
+  fn: import { resolveIncident } from "@src/core/modules/aegis/operations",
+  entities: [Incident, TimelineEvent, AuditLog]
+}
+
+action closeIncident {
+  fn: import { closeIncident } from "@src/core/modules/aegis/operations",
+  entities: [Incident, TimelineEvent, AuditLog]
+}
+
+action escalateToCase {
+  fn: import { escalateToCase } from "@src/core/modules/aegis/operations",
+  entities: [Incident, Case, Observable, TimelineEvent]
+}
+
+query getIncidentStats {
+  fn: import { getIncidentStats } from "@src/core/modules/aegis/operations",
+  entities: [Incident, Workspace, WorkspaceMember]
+}
+//#endregion
+
+//#region Aegis - Case Operations
+query getCases {
+  fn: import { getCases } from "@src/core/modules/aegis/operations",
+  entities: [Case, User, Workspace, WorkspaceMember, Incident, Evidence, Observable, Task, TTP, TimelineEvent, InvestigationNote]
+}
+
+query getCaseById {
+  fn: import { getCaseById } from "@src/core/modules/aegis/operations",
+  entities: [Case, User, Workspace, WorkspaceMember, Incident, Evidence, Observable, Task, TTP, TimelineEvent, InvestigationNote, CustodyLog]
+}
+
+action createCase {
+  fn: import { createCase } from "@src/core/modules/aegis/operations",
+  entities: [Case, Workspace, WorkspaceMember, TimelineEvent, AuditLog, Notification]
+}
+
+action updateCase {
+  fn: import { updateCase } from "@src/core/modules/aegis/operations",
+  entities: [Case, TimelineEvent, AuditLog]
+}
+
+action assignCase {
+  fn: import { assignCase } from "@src/core/modules/aegis/operations",
+  entities: [Case, WorkspaceMember, TimelineEvent, Notification, AuditLog]
+}
+
+action addCaseNote {
+  fn: import { addCaseNote } from "@src/core/modules/aegis/operations",
+  entities: [Case, InvestigationNote, User, TimelineEvent]
+}
+
+action addFindings {
+  fn: import { addFindings } from "@src/core/modules/aegis/operations",
+  entities: [Case, TimelineEvent, AuditLog]
+}
+
+action addRecommendations {
+  fn: import { addRecommendations } from "@src/core/modules/aegis/operations",
+  entities: [Case, TimelineEvent, AuditLog]
+}
+
+action closeCase {
+  fn: import { closeCase } from "@src/core/modules/aegis/operations",
+  entities: [Case, TimelineEvent, AuditLog, Notification]
+}
+
+action reopenCase {
+  fn: import { reopenCase } from "@src/core/modules/aegis/operations",
+  entities: [Case, TimelineEvent]
+}
+
+query generateCaseReport {
+  fn: import { generateCaseReport } from "@src/core/modules/aegis/operations",
+  entities: [Case, User, Incident, Evidence, Observable, TTP, TimelineEvent, InvestigationNote]
+}
+
+query exportCaseData {
+  fn: import { exportCaseData } from "@src/core/modules/aegis/operations",
+  entities: [Case, User, Incident, Evidence, Observable, TTP, TimelineEvent, InvestigationNote]
+}
+
+action applyCaseTemplate {
+  fn: import { applyCaseTemplate } from "@src/core/modules/aegis/operations",
+  entities: [Case, Task, TimelineEvent]
+}
+
+query getCaseStats {
+  fn: import { getCaseStats } from "@src/core/modules/aegis/operations",
+  entities: [Case, Workspace, WorkspaceMember]
+}
+//#endregion
+
+//#region Aegis - Observable Operations
+query getObservables {
+  fn: import { getObservables } from "@src/core/modules/aegis/operations",
+  entities: [Observable, User, Workspace, WorkspaceMember, Alert, Incident, Case, Evidence]
+}
+
+query getObservableById {
+  fn: import { getObservableById } from "@src/core/modules/aegis/operations",
+  entities: [Observable, User, Workspace, WorkspaceMember, Alert, Incident, Case, Evidence]
+}
+
+action createObservable {
+  fn: import { createObservable } from "@src/core/modules/aegis/operations",
+  entities: [Observable, User, Workspace, WorkspaceMember]
+}
+
+action updateObservable {
+  fn: import { updateObservable } from "@src/core/modules/aegis/operations",
+  entities: [Observable]
+}
+
+action markAsSighted {
+  fn: import { markAsSighted } from "@src/core/modules/aegis/operations",
+  entities: [Observable]
+}
+
+action enrichObservable {
+  fn: import { enrichObservable } from "@src/core/modules/aegis/operations",
+  entities: [Observable]
+}
+
+action bulkImportObservables {
+  fn: import { bulkImportObservables } from "@src/core/modules/aegis/operations",
+  entities: [Observable, User, Workspace, WorkspaceMember]
+}
+
+query exportObservables {
+  fn: import { exportObservables } from "@src/core/modules/aegis/operations",
+  entities: [Observable, User, Workspace, WorkspaceMember]
+}
+
+query searchObservables {
+  fn: import { searchObservables } from "@src/core/modules/aegis/operations",
+  entities: [Observable, User, Workspace, WorkspaceMember]
+}
+
+action linkObservable {
+  fn: import { linkObservable } from "@src/core/modules/aegis/operations",
+  entities: [Observable, Alert, Incident, Case, Evidence]
+}
+
+query getObservableStats {
+  fn: import { getObservableStats } from "@src/core/modules/aegis/operations",
+  entities: [Observable, Workspace, WorkspaceMember]
+}
+
+action deleteObservable {
+  fn: import { deleteObservable } from "@src/core/modules/aegis/operations",
+  entities: [Observable, Workspace, WorkspaceMember]
+}
+//#endregion
+
+//#region Aegis - Evidence Operations
+query getEvidenceList {
+  fn: import { getEvidenceList } from "@src/core/modules/aegis/operations",
+  entities: [Evidence, Case, User, CustodyLog, Observable]
+}
+
+query getEvidenceById {
+  fn: import { getEvidenceById } from "@src/core/modules/aegis/operations",
+  entities: [Evidence, Case, User, Workspace, CustodyLog, Observable, AuditLog]
+}
+
+action uploadEvidence {
+  fn: import { uploadEvidence } from "@src/core/modules/aegis/operations",
+  entities: [Evidence, Case, User, Workspace, CustodyLog, AuditLog, Notification]
+}
+
+action addCustodyLog {
+  fn: import { addCustodyLog } from "@src/core/modules/aegis/operations",
+  entities: [Evidence, Case, User, CustodyLog]
+}
+
+query verifyEvidenceIntegrity {
+  fn: import { verifyEvidenceIntegrity } from "@src/core/modules/aegis/operations",
+  entities: [Evidence, Workspace, WorkspaceMember]
+}
+
+action deleteEvidence {
+  fn: import { deleteEvidence } from "@src/core/modules/aegis/operations",
+  entities: [Evidence, Case, User, Workspace, WorkspaceMember, CustodyLog]
+}
+//#endregion
+
+//#region Aegis - Task Operations
+query getTasksByIncident {
+  fn: import { getTasksByIncident } from "@src/core/modules/aegis/operations",
+  entities: [Task, User, Incident, Workspace, WorkspaceMember]
+}
+
+query getTasksByCase {
+  fn: import { getTasksByCase } from "@src/core/modules/aegis/operations",
+  entities: [Task, User, Case, Workspace, WorkspaceMember]
+}
+
+action createTask {
+  fn: import { createTask } from "@src/core/modules/aegis/operations",
+  entities: [Task, User, Incident, Case, Workspace, WorkspaceMember]
+}
+
+action updateTask {
+  fn: import { updateTask } from "@src/core/modules/aegis/operations",
+  entities: [Task, User, Incident, Case, Workspace, WorkspaceMember]
+}
+
+action completeTask {
+  fn: import { completeTask } from "@src/core/modules/aegis/operations",
+  entities: [Task, User, Incident, Case, Notification]
+}
+
+query getTaskDependencies {
+  fn: import { getTaskDependencies } from "@src/core/modules/aegis/operations",
+  entities: [Task, User, Workspace, WorkspaceMember]
+}
+//#endregion
+
+//#region MITRE Module Operations - Independent & Polymorphic
+
+// === Reference Data Operations (Read-only MITRE ATT&CK data) ===
+query getMitreTactics {
+  fn: import { getMitreTactics } from "@src/core/modules/mitre/operations/referenceData",
+  entities: [MitreTactic, MitreTechnique]
+}
+
+query getMitreTechniques {
+  fn: import { getMitreTechniques } from "@src/core/modules/mitre/operations/referenceData",
+  entities: [MitreTactic, MitreTechnique]
+}
+
+query getMitreSubtechniques {
+  fn: import { getMitreSubtechniques } from "@src/core/modules/mitre/operations/referenceData",
+  entities: [MitreTactic, MitreTechnique]
+}
+
+query searchMitreTechniques {
+  fn: import { searchMitreTechniques } from "@src/core/modules/mitre/operations/referenceData",
+  entities: [MitreTactic, MitreTechnique]
+}
+
+query getMitreByPlatform {
+  fn: import { getMitreByPlatform } from "@src/core/modules/mitre/operations/referenceData",
+  entities: [MitreTactic, MitreTechnique]
+}
+
+query getMitreByDataSource {
+  fn: import { getMitreByDataSource } from "@src/core/modules/mitre/operations/referenceData",
+  entities: [MitreTactic, MitreTechnique]
+}
+
+query getMitreStats {
+  fn: import { getMitreStats } from "@src/core/modules/mitre/operations/referenceData",
+  entities: [MitreTactic, MitreTechnique]
+}
+
+query getMitreTechniqueDetails {
+  fn: import { getMitreTechniqueDetails } from "@src/core/modules/mitre/operations/referenceData",
+  entities: [MitreTactic, MitreTechnique]
+}
+
+// === TTP Management Operations (Polymorphic - works with any resource) ===
+query getTTPs {
+  fn: import { getTTPs } from "@src/core/modules/mitre/operations/ttpManagement",
+  entities: [TTP]
+}
+
+action linkTTP {
+  fn: import { linkTTP } from "@src/core/modules/mitre/operations/ttpManagement",
+  entities: [TTP]
+}
+
+action unlinkTTP {
+  fn: import { unlinkTTP } from "@src/core/modules/mitre/operations/ttpManagement",
+  entities: [TTP]
+}
+
+action updateTTPOccurrence {
+  fn: import { updateTTPOccurrence } from "@src/core/modules/mitre/operations/ttpManagement",
+  entities: [TTP]
+}
+
+// === Sync Job ===
+job mitreSyncJob {
+  executor: PgBoss,
+  perform: {
+    fn: import { syncMitreAttackJob } from "@src/core/modules/mitre/jobs/syncJob"
+  },
+  schedule: {
+    cron: "0 3 * * *" // Daily at 3 AM
+  },
+  entities: [MitreTactic, MitreTechnique]
+}
+
+//#endregion
+
+//#region Aegis - Timeline Operations
+query getTimeline {
+  fn: import { getTimeline } from "@src/core/modules/aegis/operations",
+  entities: [TimelineEvent, User, Alert, Incident, Case, Workspace, WorkspaceMember]
+}
+
+action addTimelineEvent {
+  fn: import { addTimelineEvent } from "@src/core/modules/aegis/operations",
+  entities: [TimelineEvent, User, Alert, Incident, Case, Workspace, WorkspaceMember]
+}
+
+query exportTimeline {
+  fn: import { exportTimeline } from "@src/core/modules/aegis/operations",
+  entities: [TimelineEvent, User, Alert, Incident, Case, Workspace, WorkspaceMember]
+}
+//#endregion
+
+//#region Feature Management System
+
+// === Feature Management Routes ===
+route AdminFeaturesRoute { path: "/admin/features", to: AdminFeaturesPage }
+page AdminFeaturesPage {
+  authRequired: true,
+  component: import AdminFeatures from "@src/client/pages/admin/features/FeatureManagementPage"
+}
+
+// === Feature Management Queries ===
+query getFeatureFlags {
+  fn: import { getFeatureFlags } from "@src/core/features/operations",
+  entities: [FeatureFlag, WorkspaceFeatureOverride, Workspace]
+}
+
+query getWorkspaceFeatures {
+  fn: import { getWorkspaceFeatures } from "@src/core/features/operations",
+  entities: [FeatureFlag, WorkspaceFeatureOverride, Workspace]
+}
+
+// === Feature Management Actions ===
+action updateFeatureFlag {
+  fn: import { updateFeatureFlag } from "@src/core/features/operations",
+  entities: [FeatureFlag, AuditLog]
+}
+
+action toggleWorkspaceFeature {
+  fn: import { toggleWorkspaceFeature } from "@src/core/features/operations",
+  entities: [FeatureFlag, WorkspaceFeatureOverride, Workspace, AuditLog]
+}
+
+// === Feature Analytics Queries ===
+query getWorkspaceFeatureAnalytics {
+  fn: import { getWorkspaceFeatureAnalytics } from "@src/core/features/operations",
+  entities: [Workspace, WorkspaceMember, FeatureUsageLog, AuditLog]
+}
+
+query getGlobalFeatureAdoptionMetrics {
+  fn: import { getGlobalFeatureAdoptionMetrics } from "@src/core/features/operations",
+  entities: [Workspace, WorkspaceFeatureOverride, FeatureFlag]
+}
+
+// === Enhanced Analytics Queries ===
+query getFeatureUsageHeatmap {
+  fn: import { getFeatureUsageHeatmap } from "@src/core/features/operations",
+  entities: [Workspace, WorkspaceMember, FeatureUsageLog]
+}
+
+query getPlanConversionFunnel {
+  fn: import { getPlanConversionFunnel } from "@src/core/features/operations",
+  entities: [Workspace, WorkspaceSubscriptionHistory]
+}
+
+query getFeatureAdoptionTrends {
+  fn: import { getFeatureAdoptionTrends } from "@src/core/features/operations",
+  entities: [Workspace, WorkspaceFeatureOverride, FeatureFlag, FeatureUsageLog]
+}
+
+query getFeatureUsageDashboard {
+  fn: import { getFeatureUsageDashboard } from "@src/core/features/operations",
+  entities: [Workspace, WorkspaceFeatureOverride, FeatureFlag, FeatureUsageLog]
+}
+
+// === Feature Management Jobs ===
+job cleanupDeprecatedFeaturesJob {
+  executor: PgBoss,
+  perform: {
+    fn: import { cleanupDeprecatedFeatures } from "@src/core/features/jobs",
+  },
+  schedule: {
+    cron: "0 2 * * *" // Daily at 2 AM
+  },
+  entities: [FeatureFlag, WorkspaceFeatureOverride, AuditLog]
+}
+
+//#endregion
+

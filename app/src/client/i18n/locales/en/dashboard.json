@@ -1,0 +1,35 @@
+{
+  "title": "Dashboard",
+  "welcome": "Welcome back, {{name}}!",
+  "overview": {
+    "title": "Overview",
+    "totalUsers": "Total Users",
+    "activeWorkspaces": "Active Workspaces",
+    "revenue": "Revenue",
+    "growth": "Growth"
+  },
+  "stats": {
+    "title": "Statistics",
+    "today": "Today",
+    "thisWeek": "This Week",
+    "thisMonth": "This Month",
+    "viewDetails": "View Details"
+  },
+  "recentActivity": {
+    "title": "Recent Activity",
+    "noActivity": "No recent activity",
+    "viewAll": "View All"
+  },
+  "quickActions": {
+    "title": "Quick Actions",
+    "createWorkspace": "Create Workspace",
+    "inviteUsers": "Invite Users",
+    "viewReports": "View Reports",
+    "manageSettings": "Manage Settings"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all as read",
+    "noNotifications": "No new notifications"
+  }
+}

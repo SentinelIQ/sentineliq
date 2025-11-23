@@ -1,0 +1,65 @@
+{
+  "title": "Painel Administrativo",
+  "users": {
+    "title": "Gerenciamento de Usuários",
+    "totalUsers": "Total de Usuários",
+    "activeUsers": "Usuários Ativos",
+    "newUsers": "Novos Usuários",
+    "table": {
+      "email": "E-mail",
+      "name": "Nome",
+      "role": "Função",
+      "status": "Status",
+      "created": "Criado em",
+      "actions": "Ações"
+    },
+    "actions": {
+      "makeAdmin": "Tornar Admin",
+      "removeAdmin": "Remover Admin",
+      "suspend": "Suspender",
+      "activate": "Ativar",
+      "delete": "Excluir"
+    }
+  },
+  "stats": {
+    "title": "Estatísticas do Sistema",
+    "overview": "Visão Geral",
+    "signups": "Cadastros",
+    "revenue": "Receita",
+    "activeSubscriptions": "Assinaturas Ativas",
+    "mrr": "Receita Recorrente Mensal"
+  },
+  "logs": {
+    "title": "Logs do Sistema",
+    "level": "Nível",
+    "message": "Mensagem",
+    "timestamp": "Data/Hora",
+    "source": "Origem",
+    "filter": {
+      "all": "Todos",
+      "error": "Erros",
+      "warning": "Avisos",
+      "info": "Info"
+    }
+  },
+  "workspaces": {
+    "title": "Gerenciamento de Workspaces",
+    "totalWorkspaces": "Total de Workspaces",
+    "table": {
+      "name": "Nome",
+      "owner": "Proprietário",
+      "members": "Membros",
+      "plan": "Plano",
+      "created": "Criado em",
+      "actions": "Ações"
+    }
+  },
+  "settings": {
+    "title": "Configurações do Sistema",
+    "general": "Geral",
+    "security": "Segurança",
+    "email": "E-mail",
+    "storage": "Armazenamento",
+    "integrations": "Integrações"
+  }
+}

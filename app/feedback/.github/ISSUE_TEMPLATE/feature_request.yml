@@ -1,0 +1,111 @@
+name: 💡 Feature Request
+description: Suggest a new feature or enhancement
+title: "[FEATURE] "
+labels: ["enhancement", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 💡 Thank you for suggesting an improvement!
+        
+        Your ideas help shape the future of SentinelIQ.
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: 🎯 Target Module
+      description: Which SentinelIQ module would this feature enhance?
+      options:
+        - Aegis (Threat Intelligence)
+        - Eclipse (Dark Web Monitoring)
+        - MITRE ATT&CK Framework
+        - Analytics Dashboard
+        - Real-time Notifications
+        - Workspace Management
+        - Authentication & Security
+        - Payment & Billing
+        - Admin Dashboard
+        - New Module
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 📊 Business Priority (Your Assessment)
+      options:
+        - 🔴 High - Required for product adoption
+        - 🟡 Medium - Important but not blocking
+        - 🟢 Low - Nice to have
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 🤔 Problem Statement
+      description: What problem or need would this feature address?
+      placeholder: "Currently it is difficult/impossible to do X because..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 💡 Proposed Solution
+      description: How do you envision this feature working?
+      placeholder: "I would like to be able to..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 🔄 Alternatives Considered
+      description: Have you considered alternative solutions?
+      placeholder: "I also considered..."
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: 🎨 Mockups/Examples
+      description: Wireframes, screenshots, or examples from other tools
+      placeholder: "Paste or drag images here"
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: 📋 Use Case Scenario
+      description: Describe a real-world scenario where you would use this feature
+      placeholder: "As a security analyst, I need to..."
+
+  - type: dropdown
+    id: willing-to-pay
+    attributes:
+      label: 💰 Business Impact
+      description: Would this feature influence your decision to adopt/pay for SentinelIQ?
+      options:
+        - Yes, essential for adoption
+        - Yes, would increase perceived value
+        - Would be nice to have
+        - Unsure
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: ℹ️ Additional Context
+      placeholder: "Any other relevant information..."
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: ✔️ Pre-submission Checklist
+      options:
+        - label: I have searched for similar feature requests
+          required: true
+        - label: This feature aligns with SentinelIQ's purpose and vision
+          required: true

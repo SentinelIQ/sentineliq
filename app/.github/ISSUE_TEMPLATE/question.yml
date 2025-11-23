@@ -1,0 +1,101 @@
+name: ❓ Question
+description: Ask a question about SentinelIQ
+title: "[QUESTION] "
+labels: ["question", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        🛡️ Got a question about SentinelIQ?
+        
+        We're here to help! Please provide details below to get the best answer.
+        
+        **Before asking:** Check our [Documentation](../../docs/) and [FAQ](../feedback/docs/FAQ.md) to see if your question has already been answered.
+
+  - type: textarea
+    id: question
+    attributes:
+      label: ❓ Question
+      description: What would you like to know about SentinelIQ?
+      placeholder: Tell us what you'd like to understand about the platform...
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: 📋 Context
+      description: Provide additional context to help us understand your question better
+      placeholder: |
+        - What are you trying to accomplish?
+        - Have you tried anything already?
+        - What documentation have you reviewed?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: 🎯 Related Module
+      description: Which SentinelIQ module is your question about?
+      options:
+        - 🔐 Aegis (Threat Intelligence & IoC)
+        - 🌐 Eclipse (Dark Web Monitoring)
+        - ⚔️ MITRE (ATT&CK Framework)
+        - 🔑 Auth (Authentication & Authorization)
+        - 👥 Workspace (Multi-tenancy)
+        - 🔔 Notifications (Real-time Alerts)
+        - 💳 Payment/Billing (Subscriptions)
+        - 📊 Analytics (Metrics & Reporting)
+        - 📋 Audit (Compliance & Logging)
+        - ✓ Task Manager (Workflow Management)
+        - ⚙️ Admin Dashboard (Administrative Tools)
+        - 📚 Documentation
+        - 🚀 Deployment & Infrastructure
+        - Other
+    validations:
+      required: false
+
+  - type: dropdown
+    id: experience
+    attributes:
+      label: 👤 Experience Level
+      description: How familiar are you with SentinelIQ?
+      options:
+        - New user (just getting started)
+        - Intermediate (using for a while)
+        - Advanced (power user)
+        - Developer/Integration
+    validations:
+      required: false
+
+  - type: textarea
+    id: resources
+    attributes:
+      label: 🔗 Resources Reviewed
+      description: What documentation or resources have you already checked?
+      placeholder: |
+        - [ ] Main README
+        - [ ] Relevant module documentation
+        - [ ] API documentation
+        - [ ] GitHub Issues/Discussions
+        - [ ] Tutorial/Guide
+    validations:
+      required: false
+
+  - type: textarea
+    id: example
+    attributes:
+      label: 💡 Code Example (if applicable)
+      description: If your question involves code, please provide a minimal example
+      render: typescript
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 📝 Additional Information
+      description: Add any other context that might help us answer your question
+      placeholder: Any additional information or screenshots that might be helpful?
+

@@ -1,0 +1,15 @@
+---
+## Logstash Configuration for SentinelIQ
+## Default configuration: https://github.com/elastic/logstash/blob/8.11/config/logstash.yml
+
+http.host: "0.0.0.0"
+xpack.monitoring.elasticsearch.hosts: ["http://elasticsearch:9200"]
+
+## Pipeline configuration
+pipeline.workers: 2
+pipeline.batch.size: 125
+pipeline.batch.delay: 50
+
+## Logging
+log.level: info
+path.logs: /var/log/logstash

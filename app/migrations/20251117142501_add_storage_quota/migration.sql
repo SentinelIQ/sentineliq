@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Workspace" ADD COLUMN     "storageQuota" BIGINT NOT NULL DEFAULT 1073741824,
+ADD COLUMN     "storageUsed" BIGINT NOT NULL DEFAULT 0;

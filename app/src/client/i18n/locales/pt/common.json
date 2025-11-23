@@ -1,0 +1,82 @@
+{
+  "app": {
+    "name": "SentinelIQ",
+    "tagline": "Plataforma SaaS Empresarial"
+  },
+  "navigation": {
+    "home": "Início",
+    "dashboard": "Painel",
+    "pricing": "Preços",
+    "documentation": "Documentação",
+    "blog": "Blog",
+    "account": "Conta",
+    "admin": "Admin",
+    "logout": "Sair",
+    "login": "Entrar",
+    "signup": "Registrar"
+  },
+  "actions": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "create": "Criar",
+    "update": "Atualizar",
+    "submit": "Enviar",
+    "close": "Fechar",
+    "confirm": "Confirmar",
+    "back": "Voltar",
+    "next": "Próximo",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "export": "Exportar",
+    "import": "Importar",
+    "download": "Baixar",
+    "upload": "Enviar",
+    "copy": "Copiar",
+    "refresh": "Atualizar"
+  },
+  "status": {
+    "active": "Ativo",
+    "inactive": "Inativo",
+    "pending": "Pendente",
+    "completed": "Concluído",
+    "failed": "Falhou",
+    "cancelled": "Cancelado",
+    "loading": "Carregando...",
+    "success": "Sucesso",
+    "error": "Erro",
+    "warning": "Aviso",
+    "info": "Info"
+  },
+  "messages": {
+    "success": "Operação concluída com sucesso",
+    "error": "Ocorreu um erro",
+    "noData": "Nenhum dado disponível",
+    "loading": "Carregando dados...",
+    "confirmDelete": "Tem certeza que deseja excluir este item?",
+    "unsavedChanges": "Você tem alterações não salvas. Tem certeza que deseja sair?"
+  },
+  "validation": {
+    "required": "Este campo é obrigatório",
+    "invalidEmail": "Endereço de e-mail inválido",
+    "invalidUrl": "URL inválida",
+    "minLength": "O comprimento mínimo é {{min}} caracteres",
+    "maxLength": "O comprimento máximo é {{max}} caracteres",
+    "passwordMismatch": "As senhas não coincidem"
+  },
+  "dates": {
+    "today": "Hoje",
+    "yesterday": "Ontem",
+    "lastWeek": "Última Semana",
+    "lastMonth": "Último Mês",
+    "thisYear": "Este Ano",
+    "custom": "Intervalo Personalizado"
+  },
+  "breadcrumb": {
+    "aegis": "AEGIS"
+  },
+  "filters": {
+    "title": "Filtros"
+  }
+}

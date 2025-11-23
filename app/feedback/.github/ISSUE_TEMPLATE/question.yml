@@ -1,0 +1,57 @@
+name: ❓ Question
+description: Ask a question about SentinelIQ
+title: "[QUESTION] "
+labels: ["question"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## ❓ Ask us anything!
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: 📚 Question Category
+      options:
+        - How-to / Usage
+        - Technical Question
+        - Plans & Pricing
+        - Security & Compliance
+        - Integrations
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: ❓ Your Question
+      description: Please be as specific as possible
+      placeholder: "How can I..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: 🎯 Context
+      description: What are you trying to accomplish?
+      placeholder: "I am trying to..."
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: 🔍 What Have You Tried?
+      placeholder: "I have already tried..."
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: ✔️ Pre-submission Checklist
+      options:
+        - label: I have searched the documentation
+          required: false
+        - label: I have searched existing issues
+          required: true

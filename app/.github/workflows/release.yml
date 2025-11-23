@@ -1,0 +1,104 @@
+name: Release - Semantic Versioning
+
+on:
+  workflow_dispatch:
+    inputs:
+      release-type:
+        description: 'Release type'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - prerelease
+      dry-run:
+        description: 'Dry run (no actual release)'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release:
+    name: 📦 Create Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔧 Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: 📥 Install dependencies
+        run: npm ci
+
+      - name: 🏷️ Create release (patch)
+        if: github.event.inputs.release-type == 'patch' && github.event.inputs.dry-run == 'false'
+        run: npm run release:patch
+
+      - name: 🏷️ Create release (minor)
+        if: github.event.inputs.release-type == 'minor' && github.event.inputs.dry-run == 'false'
+        run: npm run release:minor
+
+      - name: 🏷️ Create release (major)
+        if: github.event.inputs.release-type == 'major' && github.event.inputs.dry-run == 'false'
+        run: npm run release:major
+
+      - name: 🏷️ Create release (prerelease)
+        if: github.event.inputs.release-type == 'prerelease' && github.event.inputs.dry-run == 'false'
+        run: npm run release:pre
+
+      - name: 🧪 Dry run release
+        if: github.event.inputs.dry-run == 'true'
+        run: npm run release:dry
+
+      - name: 📤 Push changes and tags
+        if: github.event.inputs.dry-run == 'false'
+        run: |
+          git push --follow-tags origin main
+
+      - name: 📝 Extract release notes
+        if: github.event.inputs.dry-run == 'false'
+        id: extract-notes
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=v${VERSION}" >> $GITHUB_OUTPUT
+          echo "VERSION: v${VERSION}"
+
+      - name: 🎉 Create GitHub Release
+        if: github.event.inputs.dry-run == 'false'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.extract-notes.outputs.version }}
+          release_name: Release ${{ steps.extract-notes.outputs.version }}
+          body_path: CHANGELOG.md
+          draft: false
+          prerelease: ${{ github.event.inputs.release-type == 'prerelease' }}
+
+      - name: 📢 Notify release
+        if: always()
+        run: |
+          if [ "${{ github.event.inputs.dry-run }}" == "true" ]; then
+            echo "🧪 Dry run completed - no actual release created"
+          else
+            echo "✅ Release ${{ steps.extract-notes.outputs.version }} created successfully!"
+          fi

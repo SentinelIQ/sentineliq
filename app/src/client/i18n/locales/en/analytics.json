@@ -1,0 +1,53 @@
+{
+  "title": "Analytics",
+  "overview": {
+    "title": "Analytics Overview",
+    "pageViews": "Page Views",
+    "uniqueVisitors": "Unique Visitors",
+    "bounceRate": "Bounce Rate",
+    "avgSessionDuration": "Avg. Session Duration"
+  },
+  "charts": {
+    "title": "Performance Metrics",
+    "traffic": "Traffic",
+    "conversions": "Conversions",
+    "revenue": "Revenue",
+    "users": "Users"
+  },
+  "sources": {
+    "title": "Traffic Sources",
+    "direct": "Direct",
+    "organic": "Organic Search",
+    "social": "Social Media",
+    "referral": "Referral",
+    "paid": "Paid Ads"
+  },
+  "topPages": {
+    "title": "Top Pages",
+    "page": "Page",
+    "views": "Views",
+    "uniqueViews": "Unique Views",
+    "avgTime": "Avg. Time"
+  },
+  "devices": {
+    "title": "Devices",
+    "desktop": "Desktop",
+    "mobile": "Mobile",
+    "tablet": "Tablet"
+  },
+  "locations": {
+    "title": "Top Locations",
+    "country": "Country",
+    "visitors": "Visitors"
+  },
+  "dateRange": {
+    "label": "Date Range",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "last7Days": "Last 7 Days",
+    "last30Days": "Last 30 Days",
+    "thisMonth": "This Month",
+    "lastMonth": "Last Month",
+    "custom": "Custom Range"
+  }
+}

@@ -1,0 +1,232 @@
+services:
+  # ----------------------------
+  # PostgreSQL
+  # ----------------------------
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: sentineliq
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ----------------------------
+  # Redis
+  # ----------------------------
+  redis:
+    image: redis:7
+    container_name: redis
+    restart: always
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ----------------------------
+  # RedisInsight (GUI)
+  # ----------------------------
+  redisinsight:
+    image: redis/redisinsight:latest
+    container_name: redisinsight
+    restart: always
+    ports:
+      - "8001:8001"
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  # ----------------------------
+  # PgAdmin (GUI PostgreSQL) — OPCIONAL
+  # ----------------------------
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@sentineliq.com
+      PGADMIN_DEFAULT_PASSWORD: sentineliq
+    ports:
+      - "5050:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ----------------------------
+  # Elasticsearch
+  # ----------------------------
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: elasticsearch
+    restart: always
+    environment:
+      - node.name=elasticsearch
+      - cluster.name=sentineliq-cluster
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ----------------------------
+  # Logstash
+  # ----------------------------
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.11.0
+    container_name: logstash
+    restart: always
+    volumes:
+      - ./elk/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ./elk/logstash/pipeline:/usr/share/logstash/pipeline:ro
+    ports:
+      - "5000:5000/tcp"
+      - "5000:5000/udp"
+      - "9600:9600"
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+      ENVIRONMENT: "${NODE_ENV:-development}"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9600/_node/stats || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ----------------------------
+  # Kibana
+  # ----------------------------
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: kibana
+    restart: always
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - SERVER_NAME=sentineliq-kibana
+      - SERVER_HOST=0.0.0.0
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ----------------------------
+  # MinIO (S3-compatible storage)
+  # ----------------------------
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    restart: always
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: sentineliq
+      MINIO_ROOT_PASSWORD: sentineliq123456
+    ports:
+      - "9000:9000"  # API
+      - "9001:9001"  # Console
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ----------------------------
+  # Sentinel Engine (Python Crawler)
+  # ----------------------------
+  sentinel-engine:
+    build:
+      context: ./services/engine
+      dockerfile: Dockerfile
+    container_name: sentinel-engine
+    restart: always
+    environment:
+      # Redis Configuration
+      REDIS_URL: redis://redis:6379
+      # Database Configuration
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/sentineliq
+      # S3/MinIO Configuration
+      S3_ENDPOINT: http://minio:9000
+      S3_REGION: us-east-1
+      S3_ACCESS_KEY: sentineliq
+      S3_SECRET_KEY: sentineliq123456
+      S3_BUCKET_DEV: sentineliq-dev
+      S3_BUCKET_PROD: sentineliq-prod
+      S3_PUBLIC_URL: http://localhost:9000
+      NODE_ENV: ${NODE_ENV:-development}
+      # Sentinel Engine Configuration (from .env.server)
+      SENTINEL_QUEUE_NAME: sentinel_tasks
+      SENTINEL_POLL_INTERVAL: 5
+      SENTINEL_CRAWLER_TIMEOUT: 30000
+      SENTINEL_MAX_CONCURRENT_CRAWLS: 3
+      SENTINEL_PLAYWRIGHT_HEADLESS: "true"
+      SENTINEL_SCREENSHOT_DIR: /app/screenshots
+      SENTINEL_TESSERACT_LANG: eng+por
+      SENTINEL_MIN_CONFIDENCE: 0.7
+      SENTINEL_LOG_RETENTION_DAYS: 30
+      # Logging Configuration (console only, no file logging)
+      LOG_LEVEL: INFO
+      # ELK Stack Integration
+      ELK_ENABLED: "true"
+      LOGSTASH_HOST: logstash
+      LOGSTASH_PORT: 5000
+      # Sentry Integration
+      SENTRY_DSN_PYTHON: ${SENTRY_DSN_PYTHON}
+      SENTRY_TRACES_SAMPLE_RATE: 1.0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      logstash:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "from utils.redis_client import RedisConsumer; exit(0 if RedisConsumer().health_check() else 1)"]
+      interval: 30s
+      timeout: 10s
+      start_period: 40s
+      retries: 3
+
+volumes:
+  postgres-data:
+  redis-data:
+  elasticsearch-data:
+  minio-data:

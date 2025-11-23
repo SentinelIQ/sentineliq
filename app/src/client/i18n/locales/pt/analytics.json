@@ -1,0 +1,53 @@
+{
+  "title": "Analytics",
+  "overview": {
+    "title": "Visão Geral de Analytics",
+    "pageViews": "Visualizações de Página",
+    "uniqueVisitors": "Visitantes Únicos",
+    "bounceRate": "Taxa de Rejeição",
+    "avgSessionDuration": "Duração Média da Sessão"
+  },
+  "charts": {
+    "title": "Métricas de Performance",
+    "traffic": "Tráfego",
+    "conversions": "Conversões",
+    "revenue": "Receita",
+    "users": "Usuários"
+  },
+  "sources": {
+    "title": "Fontes de Tráfego",
+    "direct": "Direto",
+    "organic": "Busca Orgânica",
+    "social": "Redes Sociais",
+    "referral": "Referência",
+    "paid": "Anúncios Pagos"
+  },
+  "topPages": {
+    "title": "Páginas Principais",
+    "page": "Página",
+    "views": "Visualizações",
+    "uniqueViews": "Visualizações Únicas",
+    "avgTime": "Tempo Médio"
+  },
+  "devices": {
+    "title": "Dispositivos",
+    "desktop": "Desktop",
+    "mobile": "Celular",
+    "tablet": "Tablet"
+  },
+  "locations": {
+    "title": "Principais Localizações",
+    "country": "País",
+    "visitors": "Visitantes"
+  },
+  "dateRange": {
+    "label": "Intervalo de Datas",
+    "today": "Hoje",
+    "yesterday": "Ontem",
+    "last7Days": "Últimos 7 Dias",
+    "last30Days": "Últimos 30 Dias",
+    "thisMonth": "Este Mês",
+    "lastMonth": "Mês Passado",
+    "custom": "Intervalo Personalizado"
+  }
+}

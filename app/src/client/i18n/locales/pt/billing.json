@@ -1,0 +1,86 @@
+{
+  "title": "Cobrança e Assinatura",
+  "currentPlan": {
+    "title": "Plano Atual",
+    "free": "Grátis",
+    "hobby": "Hobby",
+    "pro": "Pro",
+    "enterprise": "Enterprise",
+    "status": "Status",
+    "billingCycle": "Ciclo de Cobrança",
+    "monthly": "Mensal",
+    "yearly": "Anual",
+    "nextBilling": "Próxima data de cobrança",
+    "changePlan": "Mudar Plano",
+    "cancelSubscription": "Cancelar Assinatura"
+  },
+  "plans": {
+    "title": "Escolha Seu Plano",
+    "free": {
+      "name": "Grátis",
+      "price": "R$ 0",
+      "features": [
+        "1 Workspace",
+        "5 Usuários",
+        "Suporte Básico",
+        "1GB de Armazenamento"
+      ]
+    },
+    "hobby": {
+      "name": "Hobby",
+      "price": "R$ 49,90",
+      "features": [
+        "3 Workspaces",
+        "10 Usuários",
+        "Suporte por E-mail",
+        "10GB de Armazenamento",
+        "Analytics Básico"
+      ]
+    },
+    "pro": {
+      "name": "Pro",
+      "price": "R$ 99,90",
+      "features": [
+        "Workspaces Ilimitados",
+        "50 Usuários",
+        "Suporte Prioritário",
+        "100GB de Armazenamento",
+        "Analytics Avançado",
+        "Marca Personalizada"
+      ]
+    }
+  },
+  "paymentMethod": {
+    "title": "Método de Pagamento",
+    "addCard": "Adicionar Método de Pagamento",
+    "updateCard": "Atualizar Método de Pagamento",
+    "cardEnding": "Cartão terminando em {{last4}}",
+    "expires": "Expira em {{month}}/{{year}}",
+    "makeDefault": "Tornar Padrão",
+    "remove": "Remover"
+  },
+  "invoices": {
+    "title": "Histórico de Cobrança",
+    "date": "Data",
+    "amount": "Valor",
+    "status": "Status",
+    "download": "Baixar",
+    "paid": "Pago",
+    "pending": "Pendente",
+    "failed": "Falhou",
+    "noInvoices": "Nenhuma fatura ainda"
+  },
+  "upgrade": {
+    "title": "Faça Upgrade do Seu Plano",
+    "subtitle": "Desbloqueie mais recursos e escale seu negócio",
+    "button": "Fazer Upgrade",
+    "contactSales": "Contatar Vendas"
+  },
+  "cancel": {
+    "title": "Cancelar Assinatura",
+    "warning": "Tem certeza que deseja cancelar sua assinatura?",
+    "keepAccess": "Você manterá acesso até {{date}}",
+    "confirm": "Sim, Cancelar",
+    "nevermind": "Deixa pra lá"
+  }
+}

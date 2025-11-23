@@ -1,0 +1,23 @@
+{
+  "title": "ECLIPSE",
+  "subtitle": "Brand Protection & Intellectual Property Monitor",
+  "description": "Track and manage all detected brand violations",
+  
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Main overview of brand protection status and infringements",
+    "stats": {
+      "activeBrands": "Active Brands",
+      "monitoring": "Monitoring",
+      "totalInfringements": "Total Infringements",
+      "allTime": "All time",
+      "critical": "Critical",
+      "requireAction": "Require action",
+      "active": "Active",
+      "inProgress": "In progress",
+      "resolved": "Resolved",
+      "thisMonth": "This month"
+    },
+    "recentActivity": "Recent Activity"
+  }
+}
