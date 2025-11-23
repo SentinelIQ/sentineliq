@@ -1,0 +1,32 @@
+{
+  "name": "@sentineliq/validators",
+  "version": "1.0.0",
+  "description": "Validadores Zod compartilhados para SentinelIQ",
+  "main": "src/index.ts",
+  "type": "module",
+  "license": "MIT",
+  "files": [
+    "src",
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@sentineliq/shared-types": "workspace:*",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2"
+  },
+  "keywords": [
+    "validation",
+    "zod",
+    "sentineliq"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "name": "@sentineliq/shared-types",
+  "version": "1.0.0",
+  "description": "Tipos TypeScript compartilhados entre Wasp e outros packages",
+  "main": "src/index.ts",
+  "type": "module",
+  "license": "MIT",
+  "files": [
+    "src",
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "typescript",
+    "types",
+    "sentineliq",
+    "shared"
+  ],
+  "devDependencies": {
+    "typescript": "^5.8.2"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

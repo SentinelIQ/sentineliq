@@ -1,0 +1,33 @@
+{
+  "name": "@sentineliq/utils",
+  "version": "1.0.0",
+  "description": "Utilitários compartilhados para SentinelIQ",
+  "main": "src/index.ts",
+  "type": "module",
+  "license": "MIT",
+  "files": [
+    "src",
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@sentineliq/shared-types": "workspace:*",
+    "date-fns": "^4.1.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2"
+  },
+  "keywords": [
+    "utilities",
+    "helpers",
+    "sentineliq"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
